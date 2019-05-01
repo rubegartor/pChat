@@ -1,0 +1,1 @@
+{"general":{"firstRun":false,"showNotifications":true,"trayKey":"Alt+Q","iconPath":"./includes/icns/icon.png","downloadPath":"./downloads/","userColor":"#FFEB3B","updateColors":true},"connection":{"host":"127.0.0.1","port":"1234","reconnect":true}}

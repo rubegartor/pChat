@@ -1,0 +1,154 @@
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="app.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <nav>
+      <div class="title" id="pChatTitle">pChat</div>
+      <div class="control-box">
+        <button type="button" id="close-btn" class="close"></button>
+        <button type="button" id="max-btn" class="maximize"></button>
+        <button type="button" id="min-btn" class="minimize"></button>
+      </div>
+    </nav>
+    <div class="restart-alert no-select" style="display: none;" id="alert-restart">
+      <span>Tu configuración se ha actualizado, <a href="#" class="link" id="restartAppBtn">Click para reiniciar pChat</a></span><span class="close" id="close-alert-restart">&times;</span>
+    </div>
+    <div class="alert-bg" id="alertas"></div>
+    <div class="firstConfig-bg" id="firstConfigWindow" style="display: none;">
+      <div class="firstConfig-title no-select">Configuración inicial</div>
+      <div class="title-option">Opciones de conexión:</div>
+      <div class="option">
+        <span class="option-input">Host IP:</span> <input type="text" class="input-right" placeholder="Host IP" id="fRunhostIpInput"/>
+      </div>
+      <div class="option">
+        <span class="option-input">Puerto:</span> <input type="text" class="input-right" placeholder="Puerto" id="fRunportInput"/>
+      </div>
+      <div class="option">
+        <span class="no-select">AutoReconnect:</span>
+        <label class="switch" id="switch-2">
+          <input type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <button type="button" class="btn btn-green btn-mt btn-right" id="btnSaveFirstRun">Guardar</button>
+    </div>
+    <div class="config-bg" id="configWindow" style="display: none;">
+      <div class="config-main">
+        <div class="sidebar">
+          <ul>
+            <li id="configReturnBtn">
+              <img src="file:///includes/images/back_32.png"/>
+            </li>
+            <li id="panel-user-btn">
+              <img src="file:///includes/images/user_32.png"/>
+            </li>
+            <li id="panel-network-btn">
+              <img src="file:///includes/images/network_32.png"/>
+            </li>
+            <li id="panel-settings-btn">
+              <img src="file:///includes/images/settings_32.png"/>
+            </li>
+          </ul>
+        </div>
+        <div class="panel" id="panel-user"></div>
+        <div class="panel" id="panel-network" style="display: none;">
+          <div class="title-option">Opciones de conexión:</div>
+          <div class="option">
+            <span class="option-input">Host IP:</span> <input type="text" class="input-right" placeholder="Host IP" id="hostIpInput"/>
+          </div>
+          <div class="option">
+            <span class="option-input">Puerto:</span> <input type="text" class="input-right" placeholder="Puerto" id="portInput"/>
+          </div>
+          <div class="option">
+            <span class="no-select">AutoReconnect:</span>
+            <label class="switch" id="switch-1">
+              <input type="checkbox">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <button type="button" class="btn btn-green btn-mt btn-right" id="btnSaveNetwork">Guardar</button>
+        </div>
+        <div class="panel" id="panel-settings" style="display: none;">
+          <div class="title-option">Opciones generales:</div>
+          <div class="option">
+            <span class="option-input">Ruta de descarga:</span>
+            <input type="file" class="input-right" id="selectDownloadPath" webkitdirectory/>
+            <label for="selectDownloadPath" class="label-selectDirectory">...</label>
+            <input type="text" class="input-right" placeholder="Download Path" id="downloadPathInput"/>
+          </div>
+          <div class="option">
+            <span class="option-input">pChat Icono:</span>
+            <input type="file" class="input-right" id="selectIconPath" accept=".jpg,.jpeg,.png|image/*"/>
+            <label for="selectIconPath" class="label-selectDirectory">...</label>
+            <input type="text" class="input-right" placeholder="Icon Path" id="iconPathInput"/>
+          </div>
+          <div class="option">
+            <span class="option-input">Tray Key:</span> <input type="text" class="input-right" placeholder="Tray Key" id="minimizeShortcut" />
+          </div>
+          <div class="option">
+            <span class="no-select">Actualización de colores dinámica:</span>
+            <label class="switch" id="switch-3">
+              <input type="checkbox">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="option">
+            <span class="no-select">Mostrar notificaciones:</span>
+            <label class="switch" id="switch-4">
+              <input type="checkbox">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="title-option">Nickname Color:</div>
+          <div class="option">
+            <div class="color-picker">
+              <div class="color no-select" data-color="#FFFFFF" style="background: #FFFFFF;"></div>
+              <div class="color no-select" data-color="#F44336" style="background: #F44336"></div>
+              <div class="color no-select" data-color="#E91E63" style="background: #E91E63;"></div>
+              <div class="color no-select" data-color="#9C27B0" style="background: #9C27B0;"></div>
+              <div class="color no-select" data-color="#673AB7" style="background: #673AB7;"></div>
+              <div class="color no-select" data-color="#3F51B5" style="background: #3F51B5;"></div>
+              <div class="color no-select" data-color="#2196F3" style="background: #2196F3;"></div>
+              <div class="color no-select" data-color="#03A9F4" style="background: #03A9F4;"></div>
+              <div class="color no-select" data-color="#4CAF50" style="background: #4CAF50;"></div>
+              <div class="color no-select" data-color="#8BC34A" style="background: #8BC34A;"></div>
+              <div class="color no-select" data-color="#CDDC39" style="background: #CDDC39;"></div>
+              <div class="color no-select" data-color="#FFEB3B" style="background: #FFEB3B;"></div>
+              <div class="color no-select" data-color="#FFC107" style="background: #FFC107;"></div>
+              <div class="color no-select" data-color="#FF5722" style="background: #FF5722;"></div>
+              <div class="color no-select" data-color="#795548" style="background: #795548;"></div>
+              <div class="color no-select" data-color="#607D8B" style="background: #607D8B;"></div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-green btn-mt btn-right" id="btnSaveGeneral">Guardar</button>
+        </div>
+      </div>
+    </div>
+    <div class="image-bg" id="main-image" style="display: none;">
+      <div class="main-image"></div>
+    </div>
+    <div class="dark-bg" id="login-main">
+      <div class="login-main">
+        <span class="no-select">Nombre de usuario:</span>
+        <hr/>
+        <input type="text" id="usernameTextBox" class="loginInput" placeholder="Nombre de usuario"/>
+      </div>
+    </div>
+    <div id="wrapper">
+      <div id="upperPanel">
+        <div id="chat">
+          <ul id="msgList"></ul>
+        </div>
+      </div>
+      <div id="bottomPanel">
+        <input type="text" class="sender" id="msgSendTextBox" placeholder="Enviar mensaje" disabled="true"/>
+        <div class="options">
+          <img src="file:///includes/images/ellipsis_32.png" class="more" id="configIcon"/>
+        </div>
+      </div>
+    </div>​​​​​​​​​​​​​
+  </body>
+</html>

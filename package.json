@@ -1,0 +1,35 @@
+{
+  "name": "pchat",
+  "version": "1.1.0",
+  "description": "A simple Socket.io Chat",
+  "main": "render.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "build"
+  },
+  "author": "rubegartor",
+  "contributors": [
+    "Azkel1"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^5.0.0",
+    "electron-builder": "^20.40.2"
+  },
+  "dependencies": {
+    "electron-windows-badge": "^1.0.5",
+    "jquery": "^3.4.0",
+    "socket.io": "^2.2.0",
+    "socket.io-client": "^2.2.0"
+  },
+  "build": {
+    "appId": "72a5b2626b757f4bba1774ef46db94991ab0f183",
+    "icon": "./includes/icns/icon.ico",
+    "extraFiles": [
+      "includes"
+    ],
+    "files": [
+      "!server/*"
+    ]
+  }
+}
