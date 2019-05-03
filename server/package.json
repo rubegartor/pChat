@@ -1,6 +1,6 @@
 {
   "name": "pchat-server",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "pChat NodeJS Server",
   "main": "server.js",
   "scripts": {
