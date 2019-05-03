@@ -43,6 +43,7 @@ var userColorSelectedTmp = null; //Variable que almacena el color seleccionado e
 var lastMessageIDSended = null; //Variable que almacena el identificador del ultimo mensaje enviado
 var messageData = null; //Variable que almacena la informacion del mensaje cuando se trabaja con contextmenu
 var saveImageData = null; //Variable que almacena la informacion de la imagen cuando se trabaja con contextmenu
+var isEditing = false; //Variable que almacena el estado de edición del usuario, si está editando un mensaje o no
 
 //Main Context Events 
 ipcRenderer.on('openConfig', () => {
@@ -53,7 +54,12 @@ ipcRenderer.on('focusSender', () => {
   $('input#msgSendTextBox').focus();
 });
 
-fs.watchFile('./includes/settings.json', () => {
+ipcRenderer.on('toggleNotifications', () => {
+  config.general.showNotifications = !config.general.showNotifications;
+  dumpConfig();
+});
+
+fs.watchFile('./includes/settings.json', {'interval': 1000}, () => {
   loadConfig();
   networkPanelLoad();
   generalPanelLoad();
@@ -171,7 +177,7 @@ function showFullImage(img){
 }
 
 function updateBadge(){
-  if(!winFocus && config.general.showNotifications){
+  if(!winFocus && config.general.showCountMessages){
     unreaded += 1;
     ipcRenderer.sendSync('update-badge', unreaded);
   }
@@ -239,22 +245,26 @@ function saveImage(){
 }
 
 function editMessage(){
-  var messageId = messageData.element.currentTarget.attributes[0].nodeValue; //Obtiene el messageId del elemento
-  var messageText = $(messageData.element.currentTarget).text(); //Obtiene el texto del mensaje que se va a editar
-  var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(messageText); //Se crea el input
-  $(messageData.element.currentTarget).html(editInput); //Se reemplaza el texto con el input
-  $('input#msgSendTextBox').prop('disabled', true); //Se desactiva el input principal
-  editInput.focus();
-  scrollToBottom();
+  if(!isEditing){
+    isEditing = true;
+    var messageId = messageData.element.currentTarget.attributes[0].nodeValue; //Obtiene el messageId del elemento
+    var messageText = $(messageData.element.currentTarget).text(); //Obtiene el texto del mensaje que se va a editar
+    var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(messageText); //Se crea el input
+    $(messageData.element.currentTarget).html(editInput); //Se reemplaza el texto con el input
+    $('input#msgSendTextBox').prop('disabled', true); //Se desactiva el input principal
+    editInput.focus();
+    scrollToBottom();
 
-  editInput.keyup(function(e){
-    if(e.keyCode == 13){
-      var newInputText = editInput.val();
-      socket.emit('editMessage', {'messageId': messageId, 'newMsg': newInputText});
-      $('input#msgSendTextBox').prop('disabled', false);
-      $('input#msgSendTextBox').focus();
-    }
-  });
+    editInput.keyup(function(e){
+      if(e.keyCode == 13){
+        var newInputText = editInput.val();
+        socket.emit('editMessage', {'messageId': messageId, 'newMsg': newInputText});
+        $('input#msgSendTextBox').prop('disabled', false);
+        $('input#msgSendTextBox').focus();
+        isEditing = false;
+      }
+    });
+  }
 }
 
 function updateUsernameColor(newColor, usernameId){
@@ -291,6 +301,14 @@ function generalPanelLoad(){
     $('#minimizeShortcut').val('Alt+Q');
   }
 
+  if(config.general.notifKey != ''){
+    $('#notifShortcut').val(config.general.notifKey);
+  }else{
+    $('#notifShortcut').val('Alt+E');
+  }
+
+  $('#notifStatus').text($('#notifShortcut').val());
+
   if(config.general.iconPath != ''){
     $('#iconPathInput').val(config.general.iconPath);
   }else{
@@ -298,7 +316,8 @@ function generalPanelLoad(){
   }
 
   $('#switch-3 > input').prop('checked', config.general.updateColors);
-  $('#switch-4 > input').prop('checked', config.general.showNotifications);
+  $('#switch-4 > input').prop('checked', config.general.showCountMessages);
+  $('#switch-5 > input').prop('checked', config.general.showNotifications);
 
   var colorElement = $('.color[data-color="' + config.general.userColor + '"]');
   userColorSelectedTmp = config.general.userColor;
@@ -322,6 +341,12 @@ function checkValidUsernameColor(){
     config.general.userColor = '#FFFFFF';
     addAlert('Se ha encontrado un color no válido', 'alert-yellow');
     dumpConfig();
+  }
+}
+
+function addNotification(content){
+  if(config.general.showNotifications){
+    ipcRenderer.send('newNotif', content);
   }
 }
 
@@ -399,9 +424,9 @@ function connect(){
       $('#chat>ul>li:last').append('<br/>').append(img);
     }else{
       var datetime = $('<span>').text(getTime()).addClass('time-right');
-      var username = $('<span>').css('color', msg.userColor).text(msg.username + ':').addClass('username');
+      var msgUsername = $('<span>').attr({userId: msg.usernameId}).css('color', msg.userColor).text(msg.username + ':').addClass('username');
 
-      $('#msgList').append(username).append(datetime);
+      $('#msgList').append(msgUsername).append(datetime);
       $('#msgList').append($('<li>').append(img));
     }
 
@@ -413,7 +438,29 @@ function connect(){
 
     var lastMessageUsername = checkLastMessage();
     var attributes = {messageId: msg.hash, userId: msg.usernameId};
-    var msgText = $('<span>').attr(attributes).text(msg.content).addClass('text-line');
+
+    if(msg.mentions != null){
+      msg.mentions.forEach(function(mention){
+        msg.content = msg.content.replace(mention, '');
+      });
+    }
+
+    var msgText = $('<span>').attr(attributes).html(msg.content).addClass('text-line');
+
+    if(msg.mentions != null){
+      msg.mentions.forEach(function(mention){
+        if(mention.substring(2, mention.length - 1) == username || mention.substring(2, mention.length - 1) == 'everyone'){
+          var notifContent = msg.content;
+          if(notifContent == ''){
+            notifContent = 'Te han mencionado en un mensaje';
+          }
+          addNotification({'title': 'Nueva mención', 'content': notifContent});
+          msgText.addClass('mentionMsg');
+        }
+        var userMention = $('<span>').text(mention).addClass('mention');
+        msgText.append(userMention);
+      });
+    }
 
     if(msg.usernameId == socket.id){
       lastMessageIDSended = msg.hash;
@@ -423,9 +470,9 @@ function connect(){
       $('#chat>ul>li:last').append(msgText);
     }else{
       var datetime = $('<span>').text(getTime()).addClass('time-right');
-      var username = $('<span>').attr({userId: msg.usernameId}).css('color', msg.userColor).text(msg.username + ':').addClass('username');
+      var msgUsername = $('<span>').attr({userId: msg.usernameId}).css('color', msg.userColor).text(msg.username + ':').addClass('username');
 
-      $('#msgList').append(username).append(datetime).addClass('username');
+      $('#msgList').append(msgUsername).append(datetime).addClass('username');
       $('#msgList').append($('<li>').append(msgText));
     }
 
@@ -462,9 +509,9 @@ function connect(){
       $('#chat>ul>li:last').append('<br/>').append(fileMsg);
     }else{
       var datetime = $('<span>').text(getTime()).addClass('time-right');
-      var username = $('<span>').css('color', file.userColor).text(file.username + ':').addClass('username');
+      var msgUsername = $('<span>').attr({userId: file.usernameId}).css('color', file.userColor).text(file.username + ':').addClass('username');
 
-      $('#msgList').append(username).append(datetime).addClass('username');
+      $('#msgList').append(msgUsername).append(datetime).addClass('username');
       $('#msgList').append($('<li>').append(fileMsg));
     }
 
@@ -635,6 +682,10 @@ $(document).ready(function() {
   });
 
   $('#switch-4 > .slider').on('click', function(){
+    config.general.showCountMessages = !config.general.showCountMessages;
+  });
+
+  $('#switch-5 > .slider').on('click', function(){
     config.general.showNotifications = !config.general.showNotifications;
   });
   
@@ -691,6 +742,16 @@ $(document).ready(function() {
       completeSave = false;
     }
 
+    if($('#notifShortcut').val().trim() != ''){
+      if($('#notifShortcut').val().trim() != config.general.notifKey){
+        restart = true;
+      }
+
+      config.general.notifKey = $('#notifShortcut').val();
+    }else{
+      completeSave = false;
+    }
+
     if($('#iconPathInput').val().trim() != ''){
       config.general.iconPath = $('#iconPathInput').val().trim();
       if(path.isAbsolute($('#iconPathInput').val().trim())){
@@ -722,7 +783,7 @@ $(document).ready(function() {
       var reader = new FileReader();
       reader.onload = function(event){
         var b64Image = event.target.result;
-        socket.emit('image', {'image': b64Image, 'color': config.general.userColor});
+        socket.emit('image', {'image': b64Image, 'color': config.general.userColor, 'usernameId': socket.id});
       };
       reader.readAsDataURL(blob);
     }
@@ -741,7 +802,7 @@ $(document).ready(function() {
     for(let f of e.originalEvent.dataTransfer.files) {
       var type = f.type.split('/');
       if(socket.connected && type[0] == 'image'){
-        socket.emit('image', {'image': base64Encode(f.path), 'color': config.general.userColor});
+        socket.emit('image', {'image': base64Encode(f.path), 'color': config.general.userColor, 'usernameId': socket.id});
       }else{
         if(socket.connected){
           if(f.size / 1024 / 1024 <= 20){
@@ -750,7 +811,7 @@ $(document).ready(function() {
                 if(err){
                   addAlert('No se ha podido procesar tu archivo', 'alert-red');
                 }else{
-                  socket.emit('file', {'name': f.name, 'buffer': data, 'size': f.size, 'color': config.general.userColor});
+                  socket.emit('file', {'name': f.name, 'buffer': data, 'size': f.size, 'color': config.general.userColor, 'usernameId': socket.id});
                 }
               });
             }else{
@@ -770,9 +831,16 @@ $(document).ready(function() {
     if(e.keyCode == 13){
       if($(this).val().trim() != ''){
         $(this).prop('disabled', true);
-        username = $(this).val().trim();
-        connect();
-        addAlert('Estableciendo conexión con el servidor...', 'alert-blue');
+        if($(this).val().trim().match(/^[a-zA-Z0-9\-_\s]+$/) != null && $(this).val().trim() != 'everyone'){
+          username = $(this).val().trim();
+          connect();
+          addAlert('Estableciendo conexión con el servidor...', 'alert-blue');
+          $('input#usernameTextBox').val('');
+        }else{
+          addAlert('Nombre de usuario no válido', 'alert-yellow');
+          $(this).prop('disabled', false);
+          $(this).focus();
+        }
       }
     }
   });
@@ -781,14 +849,14 @@ $(document).ready(function() {
     if(e.keyCode == 13){
       if($(this).val().trim() != '' && socket.connected){
         var content = $('input#msgSendTextBox').val().trim();
-        socket.emit('message', {'content': content, 'color': config.general.userColor});
+        var mentions = getMentions(content);
+        socket.emit('message', {'content': content, 'color': config.general.userColor, 'mentions': mentions});
         $('input#msgSendTextBox').val('');
       }
     }
-  });
 
-  $('input#msgSendTextBox').keyup(function(e){
-    if(e.keyCode == 38){
+    if(e.keyCode == 38 && $('#chat>ul').children().length != 0 && !isEditing){
+      isEditing = true;
       var msgText = $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]').text();  
       var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(msgText); //Se crea el input
       $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]').html(editInput); //Se reemplaza el texto con el input
@@ -802,10 +870,16 @@ $(document).ready(function() {
           socket.emit('editMessage', {'messageId': lastMessageIDSended, 'newMsg': newInputText});
           $('input#msgSendTextBox').prop('disabled', false);
           $('input#msgSendTextBox').focus();
+          isEditing = false;
         }
       });
     }
   });
+
+  function getMentions(message){
+    var pattern = /\B<@[a-zA-Z0-9_-\s]+>/gi;
+    return message.match(pattern);
+  }
 
   $('#close-btn').on('click', function() {
     try{

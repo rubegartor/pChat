@@ -768,3 +768,34 @@ input[type="file"]{
   text-align: center;
   margin-bottom: 15px;
 }
+
+.mention{
+  cursor: pointer;
+  background-color: rgba(41,128,185,.3);
+  color: rgb(52,152,219);
+  margin: 0px 4px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border-radius: 3px;
+}
+
+.mention + .mention{
+  margin: 0px 4px;
+}
+
+.mention:hover{
+  opacity: 0.8;
+}
+
+.mentionMsg{
+  background-color: rgba(142,68,173, .3);
+  border-left: 4px solid rgba(155,89,182, .2);
+  border-top: 1px solid rgba(155,89,182, .2);
+  border-bottom: 1px solid rgba(155,89,182, .2);
+  border-right: 1px solid rgba(155,89,182, .2);
+  border-radius: 3px;
+  padding: 2px 2px;
+  margin: 1px 0px;
+}

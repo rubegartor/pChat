@@ -7,26 +7,29 @@ userList = [] //Lista de nicknames conectados
 users = {} //Diccionario por key(user.id) conectados
 files = {} //Diccionario para almacenar las ids de los archivos junto al nombre del archivo
 
-function Image(username, userColor, b64Image){
+function Image(username, userColor, usernameId, b64Image){
   this.username = username
   this.userColor = userColor
+  this.usernameId = usernameId
   this.b64Image = b64Image
 }
 
-function Message(username, userColor, usernameId, content, hash){
+function Message(username, userColor, usernameId, content, hash, mentions){
   this.username = username
   this.userColor = userColor
   this.usernameId = usernameId
   this.content = content
   this.hash = hash
+  this.mentions = mentions
 }
 
-function FileResponse(username, userColor, filename, hash, size){
+function FileResponse(username, userColor, filename, hash, size, usernameId){
   this.username = username
   this.userColor = userColor
   this.filename = filename
   this.hash = hash
   this.size = size
+  this.usernameId = usernameId
 }
 
 function File(filename, buffer, extension){
@@ -62,11 +65,11 @@ io.on('connection', function(client) {
 
   client.on('message', function(message){
     var messageHash = sha1(new Date().getTime() + users[client.id]['username'])
-    io.emit('messageResponse', new Message(users[client.id]['username'], message.color, client.id, message.content, messageHash))
+    io.emit('messageResponse', new Message(users[client.id]['username'], message.color, client.id, message.content, messageHash, message.mentions))
   })
 
   client.on('image', function(image){
-    io.emit('imageResponse', new Image(users[client.id]['username'], image.color, image))
+    io.emit('imageResponse', new Image(users[client.id]['username'], image.color, client.id, image))
   })
 
   client.on('file', function(file){
@@ -82,7 +85,7 @@ io.on('connection', function(client) {
       if(err){
         console.log(err)
       }else{
-        io.emit('fileResponse', new FileResponse(users[client.id]['username'], file.color, file.name, fileHash, file.size))
+        io.emit('fileResponse', new FileResponse(users[client.id]['username'], file.color, file.name, fileHash, file.size, client.id))
       }
     })
   })
