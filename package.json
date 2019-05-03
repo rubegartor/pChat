@@ -1,6 +1,6 @@
 {
-  "name": "pchat",
-  "version": "1.1.0",
+  "name": "pChat",
+  "version": "1.1.1",
   "description": "A simple Socket.io Chat",
   "main": "render.js",
   "scripts": {
