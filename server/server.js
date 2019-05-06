@@ -7,11 +7,12 @@ userList = [] //Lista de nicknames conectados
 users = {} //Diccionario por key(user.id) conectados
 files = {} //Diccionario para almacenar las ids de los archivos junto al nombre del archivo
 
-function Image(username, userColor, usernameId, b64Image){
+function Image(username, userColor, usernameId, b64Image, hash){
   this.username = username
   this.userColor = userColor
   this.usernameId = usernameId
   this.b64Image = b64Image
+  this.hash = hash
 }
 
 function Message(username, userColor, usernameId, content, hash, mentions){
@@ -42,6 +43,12 @@ function sha1(string) {
   return crypto.createHash('sha1').update(string, 'binary').digest('hex')
 }
 
+function removeDuplicates(arr) {
+  let s = new Set(arr)
+  let it = s.values()
+  return Array.from(it)
+}
+
 io.on('connection', function(client) {
   console.log('User connected (' + client.id + ')')
   client.on('checkUsername', function(username){
@@ -65,11 +72,22 @@ io.on('connection', function(client) {
 
   client.on('message', function(message){
     var messageHash = sha1(new Date().getTime() + users[client.id]['username'])
+
+    message.mentions = removeDuplicates(message.mentions) //Se eliminan las menciones duplicadas
+
+    //Se eliminan de la parte de texto del mensaje las menciones
+    if(message.mentions != null){
+      message.mentions.forEach(function(mention){
+        message.content = message.content.replace(new RegExp(mention, 'g'), '')
+      })
+    }
+
     io.emit('messageResponse', new Message(users[client.id]['username'], message.color, client.id, message.content, messageHash, message.mentions))
   })
 
   client.on('image', function(image){
-    io.emit('imageResponse', new Image(users[client.id]['username'], image.color, client.id, image))
+    var imageHash = sha1(new Date().getTime() + users[client.id]['username'])
+    io.emit('imageResponse', new Image(users[client.id]['username'], image.color, client.id, image, imageHash))
   })
 
   client.on('file', function(file){
@@ -106,6 +124,10 @@ io.on('connection', function(client) {
 
   client.on('removeMessage', function(messageId){
     io.emit('removeMessageResponse', messageId)
+  })
+
+  client.on('removeImage', function(imageId){
+    io.emit('removeImageResponse', imageId)
   })
 
   client.on('editMessage', function(data){

@@ -30,6 +30,13 @@ menuImage.append(new MenuItem ({
   }
 }));
 
+menuImage.append(new MenuItem ({
+  label: 'Eliminar Imagen',
+  click() {
+    removeImage();
+  }
+}));
+
 //Client variables
 var availableColors = ['#FFFFFF', '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3', '#03A9F4', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF5722', '#795548', '#607D8B'];
 var socket = null; //Variable que almacena el objeto socket
@@ -44,6 +51,7 @@ var lastMessageIDSended = null; //Variable que almacena el identificador del ult
 var messageData = null; //Variable que almacena la informacion del mensaje cuando se trabaja con contextmenu
 var saveImageData = null; //Variable que almacena la informacion de la imagen cuando se trabaja con contextmenu
 var isEditing = false; //Variable que almacena el estado de edición del usuario, si está editando un mensaje o no
+var blockedScroll = false; //Variable que almacena el estado de bloqueo de desplazamiento de la barra de desplazamiento
 
 //Main Context Events 
 ipcRenderer.on('openConfig', () => {
@@ -56,8 +64,19 @@ ipcRenderer.on('focusSender', () => {
 
 ipcRenderer.on('toggleNotifications', () => {
   config.general.showNotifications = !config.general.showNotifications;
-  dumpConfig();
+  fs.writeFile('./includes/settings.json', JSON.stringify(config), function (err) {
+    if(err){
+      addAlert('No se ha podido guardar la nueva configuración.', 'alert-red');
+    }else{
+      if(config.general.showNotifications){
+        addAlert('Se han habilitado las notificaciones', 'alert-purple');
+      }else{
+        addAlert('Se han deshabilitado las notificaciones', 'alert-purple');
+      }
+    }
+  });
 });
+//End Main Context Events
 
 fs.watchFile('./includes/settings.json', {'interval': 1000}, () => {
   loadConfig();
@@ -130,19 +149,18 @@ function base64Encode(file) {
 }
 
 function scrollToBottom(){
-  $('#chat').scrollTop($('#chat')[0].scrollHeight);
+  if(!blockedScroll){
+    $('#chat').scrollTop($('#chat')[0].scrollHeight);
+  }
 }
 
-function getTime() {
+function getTime(time = '') {
   var date = new Date();
-  return date.toLocaleTimeString(navigator.language, {
-    hour: '2-digit',
-    minute:'2-digit'
-  });
-}
 
-function parseTime(time){
-  var date = new Date(time);
+  if(time != ''){
+    date = new Date(time);
+  }
+  
   return date.toLocaleTimeString(navigator.language, {
     hour: '2-digit',
     minute:'2-digit'
@@ -177,7 +195,7 @@ function showFullImage(img){
 }
 
 function updateBadge(){
-  if(!winFocus && config.general.showCountMessages){
+  if((!winFocus && config.general.showCountMessages) || blockedScroll){
     unreaded += 1;
     ipcRenderer.sendSync('update-badge', unreaded);
   }
@@ -200,10 +218,10 @@ function addAlert(content, color){
 }
 
 function formatBytes(bytes, decimals) {
-  if(bytes == 0) return '0 Bytes';
+  if(bytes == 0) return '0 B';
   var k = 1024,
     dm = decimals <= 0 ? 0 : decimals || 2,
-    sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+    sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
     i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
@@ -221,7 +239,9 @@ function hexToRgb(hex, opacity) {
 }
 
 function removeMessage(){
-  socket.emit('removeMessage', messageData.messageId);
+  if(!isEditing){
+    socket.emit('removeMessage', messageData.messageId);
+  }
 }
 
 function relaunchApp(){
@@ -234,7 +254,8 @@ function saveImage(){
   var savePath = dialog.showSaveDialog({filters: [{ name: 'Imágenes (.png)', extensions: ['png'] }]});
 
   if(savePath != undefined){
-    fs.writeFile(savePath, saveImageData, 'base64', function(err) {
+    var imageBuffer = $(saveImageData).attr('src').replace('data:image/png;base64,', '');
+    fs.writeFile(savePath, imageBuffer, 'base64', function(err) {
       if(err){
         addAlert('No se ha podido guardar la imagen', 'alert-red');
       }else{
@@ -248,8 +269,15 @@ function editMessage(){
   if(!isEditing){
     isEditing = true;
     var messageId = messageData.element.currentTarget.attributes[0].nodeValue; //Obtiene el messageId del elemento
-    var messageText = $(messageData.element.currentTarget).text(); //Obtiene el texto del mensaje que se va a editar
-    var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(messageText); //Se crea el input
+    var messageText = $(messageData.element.currentTarget); //Obtiene el elemento principal del mensaje
+
+    console.log(messageData.element);
+
+    if(messageText.children('span.edited').length > 0){
+      messageText.children('span.edited').remove();
+    }
+
+    var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(messageText.text()); //Se crea el input
     $(messageData.element.currentTarget).html(editInput); //Se reemplaza el texto con el input
     $('input#msgSendTextBox').prop('disabled', true); //Se desactiva el input principal
     editInput.focus();
@@ -350,6 +378,10 @@ function addNotification(content){
   }
 }
 
+function removeImage(){
+  socket.emit('removeImage', $(saveImageData).attr('imageId'));
+}
+
 function connect(){
   formattedHost = 'http://' + config.connection.host + ':' + config.connection.port;
   socketOptions = {};
@@ -406,22 +438,23 @@ function connect(){
       finalImg = 'data:image/png;base64, ' + msg.b64Image.image;
     }
 
-    var img = $('<img>').attr('src', finalImg).addClass('imageMsg'); //Crea el elemento imagen
+    var attributes = {'src': finalImg, 'imageId': msg.hash};
+    var img = $('<img>').attr(attributes).addClass('imageMsg'); //Crea el elemento imagen
     img.on('click', function(){ //Añade el evento onclick al elemento imagen
       showFullImage($(this).attr('src'));
     });
 
     img.on('contextmenu', function(e) {
       e.preventDefault()
-      var ImgSrc = e.currentTarget.attributes[0].nodeValue;
-      saveImageData = ImgSrc.replace('data:image/png;base64,','');
+      saveImageData = e.currentTarget;
 
       rightClickPosition = {x: e.x, y: e.y};
       menuImage.popup(remote.getCurrentWindow());
     });
 
     if(lastMessageUsername == msg.username){
-      $('#chat>ul>li:last').append('<br/>').append(img);
+      img = img.css({'margin-top': '10px'}); //Si la imagen tiene un texto encima, se le aplica un margen superior para separarlo
+      $('#chat>ul>li:last').append(img);
     }else{
       var datetime = $('<span>').text(getTime()).addClass('time-right');
       var msgUsername = $('<span>').attr({userId: msg.usernameId}).css('color', msg.userColor).text(msg.username + ':').addClass('username');
@@ -438,32 +471,35 @@ function connect(){
 
     var lastMessageUsername = checkLastMessage();
     var attributes = {messageId: msg.hash, userId: msg.usernameId};
-
-    if(msg.mentions != null){
-      msg.mentions.forEach(function(mention){
-        msg.content = msg.content.replace(mention, '');
-      });
-    }
-
     var msgText = $('<span>').attr(attributes).html(msg.content).addClass('text-line');
 
     if(msg.mentions != null){
       msg.mentions.forEach(function(mention){
         if(mention.substring(2, mention.length - 1) == username || mention.substring(2, mention.length - 1) == 'everyone'){
           var notifContent = msg.content;
+
+          //Si el mensaje en el que te han notificado no tiene contenido
           if(notifContent == ''){
             notifContent = 'Te han mencionado en un mensaje';
           }
-          addNotification({'title': 'Nueva mención', 'content': notifContent});
+
+          addNotification({'title': 'Nueva mención de: ' + msg.username, 'content': notifContent});
           msgText.addClass('mentionMsg');
         }
+
         var userMention = $('<span>').text(mention).addClass('mention');
+
+        //Si el mensaje contiene texto y menciones se añade un margen izquierdo para separar las menciones del contenido del mensaje
+        if(msg.content != ''){
+          userMention.css({'margin-left': '4px'});
+        }
+
         msgText.append(userMention);
       });
     }
 
     if(msg.usernameId == socket.id){
-      lastMessageIDSended = msg.hash;
+      lastMessageIDSended = msg.hash; //Se almacena el id de tu ultimo mensaje para acceder a el en caso de querer editarlo con "flecha hacia arriba"
     }
 
     if(lastMessageUsername == msg.username){
@@ -506,7 +542,8 @@ function connect(){
     fileMsg.append(fileMsgCenterSize);
 
     if(lastMessageUsername == file.username){
-      $('#chat>ul>li:last').append('<br/>').append(fileMsg);
+      fileMsg = fileMsg.css({'margin-top': '10px'});
+      $('#chat>ul>li:last').append(fileMsg);
     }else{
       var datetime = $('<span>').text(getTime()).addClass('time-right');
       var msgUsername = $('<span>').attr({userId: file.usernameId}).css('color', file.userColor).text(file.username + ':').addClass('username');
@@ -552,7 +589,7 @@ function connect(){
     $('#panel-user').html(''); //Limpiar el panel antes de añadir usuarios a la lista para evitar stackear duplicados
     online.forEach(el => {
       var user = $('<span>').text(el.username).addClass('username');
-      var time = $('<span>').text(parseTime(el.time)).addClass('time');
+      var time = $('<span>').text(getTime(el.time)).addClass('time');
       var userBg = $('<div>').append(user).append(time).addClass('user-bg');
       $('#panel-user').append(userBg);
     });
@@ -574,9 +611,26 @@ function connect(){
     }
   });
 
+  socket.on('removeImageResponse', function(imageId){
+    var element = $('img[imageid="' + imageId + '"]');
+    var elementParent = element.parent('li');
+    var elementTime = elementParent.prev();
+    var elementUser = elementTime.prev();
+    var countChildren = elementParent.children().length - 1;
+
+    element.remove();
+
+    if(countChildren == 0){
+      elementParent.remove();
+      elementTime.remove();
+      elementUser.remove();
+    }
+  })
+
   socket.on('editMessageResponse', function(data){
     var element = $('span[messageid="' + data.messageId + '"]');
     element.text(data.newMsg);
+    element.append($('<span>').text('(editado)').addClass('edited'));
     scrollToBottom();
   });
 
@@ -857,7 +911,13 @@ $(document).ready(function() {
 
     if(e.keyCode == 38 && $('#chat>ul').children().length != 0 && !isEditing){
       isEditing = true;
-      var msgText = $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]').text();  
+
+      if($('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').length > 0){
+        $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').remove();
+      }
+
+      var msgText = $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]').text();
+
       var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(msgText); //Se crea el input
       $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]').html(editInput); //Se reemplaza el texto con el input
       $('input#msgSendTextBox').prop('disabled', true); //Se desactiva el input principal
@@ -904,6 +964,32 @@ $(document).ready(function() {
     } else {
       window.unmaximize();
     }
+  });
+
+  $('#webdev-btn').on('click', function() {
+    var window = remote.getCurrentWindow();
+    window.openDevTools()
+  });
+
+  var lastScrollTop = 0;
+  $('#chat').scroll(function(){
+    var st = $(this).scrollTop();
+    if (st > lastScrollTop){
+      //Si la posicion de la barra de desplazamiento vuelve a posicionarse abajo del todo
+      if($('#chat')[0].scrollHeight - $('#chat').scrollTop() == $('#chat').height()){
+        blockedScroll = false;
+        $('#scrollBottomBtn').attr('hidden', true);
+      }
+    }else{
+      blockedScroll = true;
+      $('#scrollBottomBtn').removeAttr('hidden');
+    }
+    lastScrollTop = st;
+  });
+
+  $('#scrollBottomBtn').on('click', function(){
+    blockedScroll = false;
+    scrollToBottom();
   });
 });
 
