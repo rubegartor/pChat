@@ -51,6 +51,7 @@ var lastMessageIDSended = null; //Variable que almacena el identificador del ult
 var messageData = null; //Variable que almacena la informacion del mensaje cuando se trabaja con contextmenu
 var saveImageData = null; //Variable que almacena la informacion de la imagen cuando se trabaja con contextmenu
 var isEditing = false; //Variable que almacena el estado de edición del usuario, si está editando un mensaje o no
+var scrollInteract = true; //Variable que almacena el estado de bloqueo de la interaccion con la baarra de desplazamiento (Si puede detectar desplazamientos o no)
 var blockedScroll = false; //Variable que almacena el estado de bloqueo de desplazamiento de la barra de desplazamiento
 
 //Main Context Events 
@@ -201,6 +202,11 @@ function updateBadge(){
   }
 }
 
+function cleanBadge(){
+  unreaded = 0;
+  ipcRenderer.sendSync('update-badge', null);
+}
+
 function checkLastMessage(){
   var el = $('#chat>ul>li:last').prev().prev().text();
 
@@ -240,6 +246,7 @@ function hexToRgb(hex, opacity) {
 
 function removeMessage(){
   if(!isEditing){
+    scrollInteract = false;
     socket.emit('removeMessage', messageData.messageId);
   }
 }
@@ -268,10 +275,10 @@ function saveImage(){
 function editMessage(){
   if(!isEditing){
     isEditing = true;
+    scrollInteract = false;
+
     var messageId = messageData.element.currentTarget.attributes[0].nodeValue; //Obtiene el messageId del elemento
     var messageText = $(messageData.element.currentTarget); //Obtiene el elemento principal del mensaje
-
-    console.log(messageData.element);
 
     if(messageText.children('span.edited').length > 0){
       messageText.children('span.edited').remove();
@@ -379,6 +386,7 @@ function addNotification(content){
 }
 
 function removeImage(){
+  scrollInteract = false;
   socket.emit('removeImage', $(saveImageData).attr('imageId'));
 }
 
@@ -609,6 +617,8 @@ function connect(){
       elementTime.remove();
       elementUser.remove();
     }
+
+    setTimeout(function(){ scrollInteract = true; }, 50);
   });
 
   socket.on('removeImageResponse', function(imageId){
@@ -625,6 +635,8 @@ function connect(){
       elementTime.remove();
       elementUser.remove();
     }
+
+    setTimeout(function(){ scrollInteract = true; }, 50);
   })
 
   socket.on('editMessageResponse', function(data){
@@ -632,6 +644,7 @@ function connect(){
     element.text(data.newMsg);
     element.append($('<span>').text('(editado)').addClass('edited'));
     scrollToBottom();
+    setTimeout(function(){ scrollInteract = true; }, 50);
   });
 
   socket.on('updateColorResponse', function(data){
@@ -911,6 +924,7 @@ $(document).ready(function() {
 
     if(e.keyCode == 38 && $('#chat>ul').children().length != 0 && !isEditing){
       isEditing = true;
+      scrollInteract = false;
 
       if($('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').length > 0){
         $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').remove();
@@ -920,7 +934,7 @@ $(document).ready(function() {
 
       var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(msgText); //Se crea el input
       $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]').html(editInput); //Se reemplaza el texto con el input
-      $('input#msgSendTextBox').prop('disabled', true); //Se desactiva el input principal
+      $('input#msgSendTextBox').prop('disabled', true); //Se activa el input principal
       editInput.focus();
       scrollToBottom();
 
@@ -973,23 +987,28 @@ $(document).ready(function() {
 
   var lastScrollTop = 0;
   $('#chat').scroll(function(){
-    var st = $(this).scrollTop();
-    if (st > lastScrollTop){
-      //Si la posicion de la barra de desplazamiento vuelve a posicionarse abajo del todo
-      if($('#chat')[0].scrollHeight - $('#chat').scrollTop() == $('#chat').height()){
-        blockedScroll = false;
-        $('#scrollBottomBtn').attr('hidden', true);
+    if(scrollInteract){ //Si está habilitada la interaccion con la barra de desplazamiento
+      var st = $(this).scrollTop();
+      if (st > lastScrollTop){
+        //Si la posicion de la barra de desplazamiento vuelve a posicionarse abajo del todo
+        if($('#chat')[0].scrollHeight - $('#chat').scrollTop() == $('#chat').height()){
+          blockedScroll = false;
+          $('#scrollBottomBtn').attr('hidden', true);
+          cleanBadge();
+        }
+      }else{
+        blockedScroll = true;
+        $('#scrollBottomBtn').removeAttr('hidden');
       }
-    }else{
-      blockedScroll = true;
-      $('#scrollBottomBtn').removeAttr('hidden');
+      lastScrollTop = st;
     }
-    lastScrollTop = st;
   });
 
   $('#scrollBottomBtn').on('click', function(){
     blockedScroll = false;
-    scrollToBottom();
+    $('#scrollBottomBtn').attr('hidden', true);
+    $('#chat').animate({scrollTop: $('#chat')[0].scrollHeight}, 1000);
+    cleanBadge();
   });
 });
 
@@ -1000,6 +1019,5 @@ $(document).on('keypress', function(){
 });
 
 $(window).focus(function() {
-  unreaded = 0;
-  ipcRenderer.sendSync('update-badge', null);
+  cleanBadge();
 });
