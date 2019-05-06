@@ -804,13 +804,3 @@ input[type="file"]{
   margin-left: 5px;
   font-size: .7em;
 }
-
-.toBottom{
-  position: absolute;
-  bottom: 20px;
-  right: 30px;
-}
-
-.toBottom:hover{
-  opacity: 0.6;
-}

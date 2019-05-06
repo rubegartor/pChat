@@ -51,7 +51,6 @@ var lastMessageIDSended = null; //Variable que almacena el identificador del ult
 var messageData = null; //Variable que almacena la informacion del mensaje cuando se trabaja con contextmenu
 var saveImageData = null; //Variable que almacena la informacion de la imagen cuando se trabaja con contextmenu
 var isEditing = false; //Variable que almacena el estado de edición del usuario, si está editando un mensaje o no
-var scrollInteract = true; //Variable que almacena el estado de bloqueo de la interaccion con la baarra de desplazamiento (Si puede detectar desplazamientos o no)
 var blockedScroll = false; //Variable que almacena el estado de bloqueo de desplazamiento de la barra de desplazamiento
 
 //Main Context Events 
@@ -65,7 +64,7 @@ ipcRenderer.on('focusSender', () => {
 
 ipcRenderer.on('toggleNotifications', () => {
   config.general.showNotifications = !config.general.showNotifications;
-  fs.writeFile('./includes/settings.json', JSON.stringify(config), function (err) {
+  fs.writeFile('./includes/settings.json', JSON.stringify(config, null, 2), function (err) {
     if(err){
       addAlert('No se ha podido guardar la nueva configuración.', 'alert-red');
     }else{
@@ -169,7 +168,7 @@ function getTime(time = '') {
 }
 
 function dumpConfig(needRestart = false){
-  fs.writeFile('./includes/settings.json', JSON.stringify(config), function (err) {
+  fs.writeFile('./includes/settings.json', JSON.stringify(config, null, 2), function (err) {
     if (err){
       addAlert('No se ha podido guardar la nueva configuración.', 'alert-red');
     }else{
@@ -246,7 +245,6 @@ function hexToRgb(hex, opacity) {
 
 function removeMessage(){
   if(!isEditing){
-    scrollInteract = false;
     socket.emit('removeMessage', messageData.messageId);
   }
 }
@@ -275,7 +273,6 @@ function saveImage(){
 function editMessage(){
   if(!isEditing){
     isEditing = true;
-    scrollInteract = false;
 
     var messageId = messageData.element.currentTarget.attributes[0].nodeValue; //Obtiene el messageId del elemento
     var messageText = $(messageData.element.currentTarget); //Obtiene el elemento principal del mensaje
@@ -386,7 +383,6 @@ function addNotification(content){
 }
 
 function removeImage(){
-  scrollInteract = false;
   socket.emit('removeImage', $(saveImageData).attr('imageId'));
 }
 
@@ -617,8 +613,6 @@ function connect(){
       elementTime.remove();
       elementUser.remove();
     }
-
-    setTimeout(function(){ scrollInteract = true; }, 50);
   });
 
   socket.on('removeImageResponse', function(imageId){
@@ -635,8 +629,6 @@ function connect(){
       elementTime.remove();
       elementUser.remove();
     }
-
-    setTimeout(function(){ scrollInteract = true; }, 50);
   })
 
   socket.on('editMessageResponse', function(data){
@@ -644,7 +636,6 @@ function connect(){
     element.text(data.newMsg);
     element.append($('<span>').text('(editado)').addClass('edited'));
     scrollToBottom();
-    setTimeout(function(){ scrollInteract = true; }, 50);
   });
 
   socket.on('updateColorResponse', function(data){
@@ -924,7 +915,6 @@ $(document).ready(function() {
 
     if(e.keyCode == 38 && $('#chat>ul').children().length != 0 && !isEditing){
       isEditing = true;
-      scrollInteract = false;
 
       if($('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').length > 0){
         $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').remove();
@@ -987,21 +977,19 @@ $(document).ready(function() {
 
   var lastScrollTop = 0;
   $('#chat').scroll(function(){
-    if(scrollInteract){ //Si está habilitada la interaccion con la barra de desplazamiento
-      var st = $(this).scrollTop();
-      if (st > lastScrollTop){
-        //Si la posicion de la barra de desplazamiento vuelve a posicionarse abajo del todo
-        if($('#chat')[0].scrollHeight - $('#chat').scrollTop() == $('#chat').height()){
-          blockedScroll = false;
-          $('#scrollBottomBtn').attr('hidden', true);
-          cleanBadge();
-        }
-      }else{
-        blockedScroll = true;
-        $('#scrollBottomBtn').removeAttr('hidden');
+    var st = $(this).scrollTop();
+    if (st > lastScrollTop){
+      //Si la posicion de la barra de desplazamiento vuelve a posicionarse abajo del todo
+      if($('#chat')[0].scrollHeight - $('#chat').scrollTop() == $('#chat').height()){
+        blockedScroll = false;
+        $('#scrollBottomBtn').attr('hidden', true);
+        cleanBadge();
       }
-      lastScrollTop = st;
+    }else{
+      blockedScroll = true;
+      $('#scrollBottomBtn').removeAttr('hidden');
     }
+    lastScrollTop = st;
   });
 
   $('#scrollBottomBtn').on('click', function(){
