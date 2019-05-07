@@ -15,21 +15,21 @@ menuMessage.append(new MenuItem ({
   click() {
     if(!isEditing){
       isEditing = true;
-  
+
       var message = $(messageData.element.currentTarget); //Obtiene el elemento principal del mensaje
       var messageId = message.attr('messageId'); //Obtiene el messageId del elemento
-      
+
       if(message.children('span.edited').length > 0){ //Si el mensaje tiene el elemento "(editado)"
         message.children('span.edited').remove(); //Se elimina el elemento contenedor de "(editado)"
       }
-      
+
       var prevText = message.text();
       var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(prevText); //Se crea el input
       message.html(editInput); //Se reemplaza el texto con el input
       $('input#msgSendTextBox').prop('disabled', true); //Se desactiva el input principal
       editInput.focus();
       scrollToBottom();
-  
+
       editInput.keyup(function(e){
         if(e.keyCode == 13){
           var newInputText = $(this).val();
@@ -103,7 +103,7 @@ var saveImageData = null; //Variable que almacena la informacion de la imagen cu
 var isEditing = false; //Variable que almacena el estado de edición del usuario, si está editando un mensaje o no
 var blockedScroll = false; //Variable que almacena el estado de bloqueo de desplazamiento de la barra de desplazamiento
 
-//Main Context Events 
+//Main Context Events
 ipcRenderer.on('openConfig', () => {
   openConfiguration();
 });
@@ -175,7 +175,7 @@ function openConfiguration(){
         if(socket.connected){
           $('#configWindow').show();
         }else{
-          addAlert('Aún no se ha establecido una conexión con el servidor', 'alert-yellow');  
+          addAlert('Aún no se ha establecido una conexión con el servidor', 'alert-yellow');
         }
       }else{
         addAlert('Aún no se ha establecido una conexión con el servidor', 'alert-yellow');
@@ -183,7 +183,7 @@ function openConfiguration(){
     });
     $('#configReturnBtn').on('click', function(){
       mainWindowState = true;
-  
+
       $('#pChatTitle').text('pChat');
       $('#configWindow').fadeOut('fast', function() {
         $('#configWindow').hide();
@@ -210,7 +210,7 @@ function getTime(time = '') {
   if(time != ''){
     date = new Date(time);
   }
-  
+
   return date.toLocaleTimeString(navigator.language, {
     hour: '2-digit',
     minute:'2-digit'
@@ -748,7 +748,7 @@ $(document).ready(function() {
   $('#switch-5 > .slider').on('click', function(){
     config.general.showNotifications = !config.general.showNotifications;
   });
-  
+
   $('.color').on('click', function(){
     $('.color').css('box-shadow', 'none');
     $(this).css({'background': 'white !important', 'box-shadow': hexToRgb($(this).attr('data-color'), 0.3) + ' 0px 0px 0px 4px'});
@@ -820,7 +820,7 @@ $(document).ready(function() {
     }else{
       completeSave = false;
     }
-    
+
     if(completeSave){
       dumpConfig(restart);
     }else{
@@ -996,14 +996,20 @@ $(document).ready(function() {
   });
 
   var lastScrollTop = 0;
+
   $('#chat').scroll(function(){
+    var bottom = ($('#chat')[0].scrollHeight - $('#chat').height());
     var st = $(this).scrollTop(); //Valor numerico de la posicion de la barra de desplazamiento
+    if ((bottom - st) > 400){
+      $("#scrollBottomBtn").removeAttr('hidden');
+    }
     if (st > lastScrollTop){ //Scroll hacia abajo
       if($('#chat')[0].scrollHeight - st == $('#chat').height()){
         /*Si la posicion de la barra de desplazamiento vuelve a posicionarse abajo del todo
           $('#chat')[0].scrollHeight   ---> Altura completa del elemento #chat, incluyendo la altura del elemento + altura total del scroll
           $('#chat').height()          ---> Altura del elemento #chat
         */
+        $("#scrollBottomBtn").attr('hidden', true);
         blockedScroll = false;
         cleanBadge();
       }
@@ -1011,6 +1017,10 @@ $(document).ready(function() {
       blockedScroll = true;
     }
     lastScrollTop = st;
+  });
+  $("#scrollBottomBtn").on('click', function(){
+    blockedScroll = false;
+    $('#chat').animate({scrollTop: $('#chat')[0].scrollHeight}, 1000);
   });
 });
 
