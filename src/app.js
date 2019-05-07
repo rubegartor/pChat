@@ -13,28 +13,77 @@ const menuImage = new Menu();
 menuMessage.append(new MenuItem ({
   label: 'Editar mensaje',
   click() {
-    editMessage();
+    if(!isEditing){
+      isEditing = true;
+  
+      var message = $(messageData.element.currentTarget); //Obtiene el elemento principal del mensaje
+      var messageId = message.attr('messageId'); //Obtiene el messageId del elemento
+      
+      if(message.children('span.edited').length > 0){ //Si el mensaje tiene el elemento "(editado)"
+        message.children('span.edited').remove(); //Se elimina el elemento contenedor de "(editado)"
+      }
+      
+      var prevText = message.text();
+      var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(prevText); //Se crea el input
+      message.html(editInput); //Se reemplaza el texto con el input
+      $('input#msgSendTextBox').prop('disabled', true); //Se desactiva el input principal
+      editInput.focus();
+      scrollToBottom();
+  
+      editInput.keyup(function(e){
+        if(e.keyCode == 13){
+          var newInputText = $(this).val();
+          if(newInputText != prevText || message.attr('edited') == 'true'){ //Si el mensaje es diferente del existente o el mensaje ya ha sido editado alguna vez
+            if(newInputText != ''){ //Si el mensaje anterior ha cambiado respecto al antiguo
+              socket.emit('editMessage', {'messageId': messageId, 'newMsg': newInputText});
+            }else{
+              //Si el nuevo texto para el mensaje esta vacío
+              socket.emit('removeMessage', messageId);
+            }
+          }else{
+            //Si los mensajes son iguales (no han cambiado)
+            $('span[messageid="' + messageId + '"]').text(prevText);
+          }
+          $('input#msgSendTextBox').prop('disabled', false);
+          $('input#msgSendTextBox').focus();
+          isEditing = false;
+        }
+      });
+    }
   }
 }));
 
 menuMessage.append(new MenuItem ({
   label: 'Eliminar mensaje',
   click() {
-    removeMessage();
+    if(!isEditing){
+      socket.emit('removeMessage', messageData.messageId);
+    }
   }
 }));
 
 menuImage.append(new MenuItem ({
   label: 'Guardar Imagen',
   click() {
-    saveImage();
+    var savePath = dialog.showSaveDialog({filters: [{ name: 'Imágenes (.png)', extensions: ['png'] }]});
+
+    if(savePath != undefined){
+      var imageBuffer = $(saveImageData).attr('src').replace('data:image/png;base64,', '');
+      fs.writeFile(savePath, imageBuffer, 'base64', function(err) {
+        if(err){
+          addAlert('No se ha podido guardar la imagen', 'alert-red');
+        }else{
+          addAlert('Se ha guardado la imagen', 'alert-green');
+        }
+      });
+    }
   }
 }));
 
 menuImage.append(new MenuItem ({
   label: 'Eliminar Imagen',
   click() {
-    removeImage();
+    socket.emit('removeImage', $(saveImageData).attr('imageId'));
   }
 }));
 
@@ -244,71 +293,10 @@ function hexToRgb(hex, opacity) {
   return 'rgba('+h.join(',')+')';
 }
 
-function removeMessage(){
-  if(!isEditing){
-    socket.emit('removeMessage', messageData.messageId);
-  }
-}
-
 function relaunchApp(){
   remote.app.isQuiting = true;
   remote.app.relaunch();
   remote.app.quit();
-}
-
-function saveImage(){
-  var savePath = dialog.showSaveDialog({filters: [{ name: 'Imágenes (.png)', extensions: ['png'] }]});
-
-  if(savePath != undefined){
-    var imageBuffer = $(saveImageData).attr('src').replace('data:image/png;base64,', '');
-    fs.writeFile(savePath, imageBuffer, 'base64', function(err) {
-      if(err){
-        addAlert('No se ha podido guardar la imagen', 'alert-red');
-      }else{
-        addAlert('Se ha guardado la imagen', 'alert-green');
-      }
-    });
-  }
-}
-
-function editMessage(){
-  if(!isEditing){
-    isEditing = true;
-
-    var message = $(messageData.element.currentTarget); //Obtiene el elemento principal del mensaje
-    var messageId = message.attr('messageId'); //Obtiene el messageId del elemento
-    
-    if(message.children('span.edited').length > 0){ //Si el mensaje tiene el elemento "(editado)"
-      message.children('span.edited').remove(); //Se elimina el elemento contenedor de "(editado)"
-    }
-    
-    var prevText = message.text();
-    var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(prevText); //Se crea el input
-    $(messageData.element.currentTarget).html(editInput); //Se reemplaza el texto con el input
-    $('input#msgSendTextBox').prop('disabled', true); //Se desactiva el input principal
-    editInput.focus();
-    scrollToBottom();
-
-    editInput.keyup(function(e){
-      if(e.keyCode == 13){
-        var newInputText = $(this).val();
-        if(newInputText != prevText || message.attr('edited') == 'true'){ //Si el mensaje es diferente del existente o el mensaje ya ha sido editado alguna vez
-          if(newInputText != ''){ //Si el mensaje anterior ha cambiado respecto al antiguo
-            socket.emit('editMessage', {'messageId': messageId, 'newMsg': newInputText});
-          }else{
-            //Si el nuevo texto para el mensaje esta vacío
-            socket.emit('removeMessage', messageId);
-          }
-        }else{
-          //Si los mensajes son iguales (no han cambiado)
-          $('span[messageid="' + messageId + '"]').text(prevText);
-        }
-        $('input#msgSendTextBox').prop('disabled', false);
-        $('input#msgSendTextBox').focus();
-        isEditing = false;
-      }
-    });
-  }
 }
 
 function updateUsernameColor(newColor, usernameId){
@@ -394,8 +382,9 @@ function addNotification(content){
   }
 }
 
-function removeImage(){
-  socket.emit('removeImage', $(saveImageData).attr('imageId'));
+function getMentions(message){
+  var pattern = /\B<@[a-zA-Z0-9_-\s]+>/gi;
+  return message.match(pattern);
 }
 
 function connect(){
@@ -976,11 +965,6 @@ $(document).ready(function() {
     }
   });
 
-  function getMentions(message){
-    var pattern = /\B<@[a-zA-Z0-9_-\s]+>/gi;
-    return message.match(pattern);
-  }
-
   $('#close-btn').on('click', function() {
     try{
       if(socket.connected){
@@ -1013,26 +997,20 @@ $(document).ready(function() {
 
   var lastScrollTop = 0;
   $('#chat').scroll(function(){
-    var st = $(this).scrollTop();
-    if (st > lastScrollTop){
-      //Si la posicion de la barra de desplazamiento vuelve a posicionarse abajo del todo
-      if($('#chat')[0].scrollHeight - $('#chat').scrollTop() == $('#chat').height()){
+    var st = $(this).scrollTop(); //Valor numerico de la posicion de la barra de desplazamiento
+    if (st > lastScrollTop){ //Scroll hacia abajo
+      if($('#chat')[0].scrollHeight - st == $('#chat').height()){
+        /*Si la posicion de la barra de desplazamiento vuelve a posicionarse abajo del todo
+          $('#chat')[0].scrollHeight   ---> Altura completa del elemento #chat, incluyendo la altura del elemento + altura total del scroll
+          $('#chat').height()          ---> Altura del elemento #chat
+        */
         blockedScroll = false;
-        $('#scrollBottomBtn').attr('hidden', true);
         cleanBadge();
       }
-    }else{
+    }else{ //Scroll hacia arriba
       blockedScroll = true;
-      $('#scrollBottomBtn').removeAttr('hidden');
     }
     lastScrollTop = st;
-  });
-
-  $('#scrollBottomBtn').on('click', function(){
-    blockedScroll = false;
-    $('#scrollBottomBtn').attr('hidden', true);
-    $('#chat').animate({scrollTop: $('#chat')[0].scrollHeight}, 1000);
-    cleanBadge();
   });
 });
 
