@@ -2,7 +2,11 @@ const server = require('http').createServer()
 const io = require('socket.io')(server)
 const fs = require('fs')
 const crypto = require('crypto')
+const minimist = require('minimist')
 
+argv = minimist(process.argv.slice(2))
+
+port = 1234
 userList = [] //Lista de nicknames conectados
 users = {} //Diccionario por key(user.id) conectados
 files = {} //Diccionario para almacenar las ids de los archivos junto al nombre del archivo
@@ -157,8 +161,12 @@ io.on('connection', function(client) {
   })
 })
 
-server.listen(1234, function (err) {
+if(argv['p'] != undefined){
+  port = argv['p']
+}
+
+server.listen(port, function (err) {
   if (err) throw err
   console.log('Starting server...')
-  console.log('Server info => http://0.0.0.0:1234/')
+  console.log('Server info => http://0.0.0.0:' + port + '/')
 })
