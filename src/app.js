@@ -5,6 +5,7 @@ const {ipcRenderer} = require('electron');
 const {Menu, MenuItem, dialog} = remote;
 const fs = require('fs');
 const path = require('path');
+const jimp = require('jimp');
 
 const menuMessage = new Menu();
 const menuImage = new Menu();
@@ -274,14 +275,15 @@ function editMessage(){
   if(!isEditing){
     isEditing = true;
 
-    var messageId = messageData.element.currentTarget.attributes[0].nodeValue; //Obtiene el messageId del elemento
-    var messageText = $(messageData.element.currentTarget); //Obtiene el elemento principal del mensaje
-
-    if(messageText.children('span.edited').length > 0){
-      messageText.children('span.edited').remove();
+    var message = $(messageData.element.currentTarget); //Obtiene el elemento principal del mensaje
+    var messageId = message.attr('messageId'); //Obtiene el messageId del elemento
+    
+    if(message.children('span.edited').length > 0){ //Si el mensaje tiene el elemento "(editado)"
+      message.children('span.edited').remove(); //Se elimina el elemento contenedor de "(editado)"
     }
-
-    var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(messageText.text()); //Se crea el input
+    
+    var prevText = message.text();
+    var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(prevText); //Se crea el input
     $(messageData.element.currentTarget).html(editInput); //Se reemplaza el texto con el input
     $('input#msgSendTextBox').prop('disabled', true); //Se desactiva el input principal
     editInput.focus();
@@ -289,8 +291,18 @@ function editMessage(){
 
     editInput.keyup(function(e){
       if(e.keyCode == 13){
-        var newInputText = editInput.val();
-        socket.emit('editMessage', {'messageId': messageId, 'newMsg': newInputText});
+        var newInputText = $(this).val();
+        if(newInputText != prevText || message.attr('edited') == 'true'){ //Si el mensaje es diferente del existente o el mensaje ya ha sido editado alguna vez
+          if(newInputText != ''){ //Si el mensaje anterior ha cambiado respecto al antiguo
+            socket.emit('editMessage', {'messageId': messageId, 'newMsg': newInputText});
+          }else{
+            //Si el nuevo texto para el mensaje esta vacío
+            socket.emit('removeMessage', messageId);
+          }
+        }else{
+          //Si los mensajes son iguales (no han cambiado)
+          $('span[messageid="' + messageId + '"]').text(prevText);
+        }
         $('input#msgSendTextBox').prop('disabled', false);
         $('input#msgSendTextBox').focus();
         isEditing = false;
@@ -635,6 +647,7 @@ function connect(){
     var element = $('span[messageid="' + data.messageId + '"]');
     element.text(data.newMsg);
     element.append($('<span>').text('(editado)').addClass('edited'));
+    element.attr({'edited': 'true'});
     scrollToBottom();
   });
 
@@ -860,7 +873,20 @@ $(document).ready(function() {
     for(let f of e.originalEvent.dataTransfer.files) {
       var type = f.type.split('/');
       if(socket.connected && type[0] == 'image'){
-        socket.emit('image', {'image': base64Encode(f.path), 'color': config.general.userColor, 'usernameId': socket.id});
+        //Comprobación de imagen válida
+        var b64 = base64Encode(f.path);
+        var buff = Buffer.from(b64, 'base64');
+
+        jimp.read(buff).then(function(img){
+          if(img.bitmap.width > 0 && img.bitmap.height > 0){
+            socket.emit('image', {'image': b64, 'color': config.general.userColor, 'usernameId': socket.id});
+          }else{
+            addAlert('La imagen que estas intentando enviar no es válida', 'alert-red');
+          }
+        }).catch(function(){
+          addAlert('La imagen que estas intentando enviar no es válida', 'alert-red');
+        });
+        //Fin de comprobación de imagen válida
       }else{
         if(socket.connected){
           if(f.size / 1024 / 1024 <= 20){
@@ -916,22 +942,32 @@ $(document).ready(function() {
     if(e.keyCode == 38 && $('#chat>ul').children().length != 0 && !isEditing){
       isEditing = true;
 
-      if($('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').length > 0){
-        $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').remove();
+      if($('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').length > 0){ //Si el mensaje tiene el elemento "(editado)"
+        $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').remove(); //Se elimina el elemento contenedor de "(editado)"
       }
 
-      var msgText = $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]').text();
+      var message = $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]');
+      var msgText = message.text();
 
       var editInput = $('<input type="text">').css({'margin': '10px 0px', 'width': '100%'}).val(msgText); //Se crea el input
-      $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]').html(editInput); //Se reemplaza el texto con el input
+      message.html(editInput); //Se reemplaza el texto con el input
       $('input#msgSendTextBox').prop('disabled', true); //Se activa el input principal
       editInput.focus();
       scrollToBottom();
 
       editInput.keyup(function(e){
         if(e.keyCode == 13){
-          var newInputText = editInput.val();
-          socket.emit('editMessage', {'messageId': lastMessageIDSended, 'newMsg': newInputText});
+          var newInputText = $(this).val();
+          if(newInputText != msgText || message.attr('edited') == 'true'){ //Si el mensaje es diferente del existente o el mensaje ya ha sido editado alguna vez
+            if(newInputText != ''){ //Si el mensaje anterior ha cambiado respecto al antiguo
+              socket.emit('editMessage', {'messageId': lastMessageIDSended, 'newMsg': newInputText});
+            }else{ //Si el nuevo texto para el mensaje esta vacío
+              socket.emit('removeMessage', lastMessageIDSended);
+            }
+          }else{
+            //Si los mensajes son iguales (no han cambiado)
+            $('span[messageid="' + lastMessageIDSended + '"]').text(msgText);
+          }
           $('input#msgSendTextBox').prop('disabled', false);
           $('input#msgSendTextBox').focus();
           isEditing = false;
