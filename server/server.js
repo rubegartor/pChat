@@ -3,13 +3,18 @@ const io = require('socket.io')(server)
 const fs = require('fs')
 const crypto = require('crypto')
 const minimist = require('minimist')
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+var striptags = require('striptags');
 
 argv = minimist(process.argv.slice(2))
-
 port = 1234
 userList = [] //Lista de nicknames conectados
 users = {} //Diccionario por key(user.id) conectados
 files = {} //Diccionario para almacenar las ids de los archivos junto al nombre del archivo
+
+const window = (new JSDOM('')).window;
+const DOMPurify = createDOMPurify(window);
 
 function Image(username, userColor, usernameId, b64Image, hash){
   this.username = username
@@ -25,7 +30,6 @@ function Message(username, userColor, usernameId, content, hash, mentions){
   this.usernameId = usernameId
   this.content = content
   this.hash = hash
-  this.mentions = mentions
 }
 
 function FileResponse(username, userColor, filename, hash, size, usernameId){
@@ -47,10 +51,9 @@ function sha1(string) {
   return crypto.createHash('sha1').update(string, 'binary').digest('hex')
 }
 
-function removeDuplicates(arr) {
-  let s = new Set(arr)
-  let it = s.values()
-  return Array.from(it)
+function getMentions(message){
+  var pattern = /\B@[a-zA-Z0-9_-]+/gi;
+  return message.match(pattern);
 }
 
 io.on('connection', function(client) {
@@ -77,16 +80,11 @@ io.on('connection', function(client) {
   client.on('message', function(message){
     var messageHash = sha1(new Date().getTime() + users[client.id]['username'])
 
-    message.mentions = removeDuplicates(message.mentions) //Se eliminan las menciones duplicadas
+    var finalMessage = DOMPurify.sanitize(striptags(message.content, ['u', 'i', 'b']));
 
-    //Se eliminan de la parte de texto del mensaje las menciones
-    if(message.mentions != null){
-      message.mentions.forEach(function(mention){
-        message.content = message.content.replace(new RegExp(mention, 'g'), '')
-      })
+    if(finalMessage.trim().length > 0){
+      io.emit('messageResponse', new Message(users[client.id]['username'], message.color, client.id, finalMessage, messageHash))
     }
-
-    io.emit('messageResponse', new Message(users[client.id]['username'], message.color, client.id, message.content, messageHash, message.mentions))
   })
 
   client.on('image', function(image){
