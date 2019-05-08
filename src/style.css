@@ -809,8 +809,21 @@ input[type="file"]{
   position: absolute;
   bottom: 20px;
   right: 30px;
+  cursor: pointer;
 }
 
 .toBottom:hover{
   opacity: 0.6;
+}
+
+a{
+  color: #3498db;
+}
+
+a:hover{
+  opacity: 0.8;
+}
+
+a:active{
+  color: #2980b9;
 }

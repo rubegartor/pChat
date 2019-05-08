@@ -6,6 +6,7 @@ const {Menu, MenuItem, dialog} = remote;
 const fs = require('fs');
 const path = require('path');
 const jimp = require('jimp');
+const shell = require('electron').shell;
 
 const menuMessage = new Menu();
 const menuImage = new Menu();
@@ -68,7 +69,7 @@ menuImage.append(new MenuItem ({
     var savePath = dialog.showSaveDialog({filters: [{ name: 'Imágenes (.png)', extensions: ['png'] }]});
 
     if(savePath != undefined){
-      var imageBuffer = $(saveImageData).attr('src').replace('data:image/png;base64,', '');
+      var imageBuffer = $(imageData).attr('src').replace('data:image/png;base64,', '');
       fs.writeFile(savePath, imageBuffer, 'base64', function(err) {
         if(err){
           addAlert('No se ha podido guardar la imagen', 'alert-red');
@@ -83,7 +84,11 @@ menuImage.append(new MenuItem ({
 menuImage.append(new MenuItem ({
   label: 'Eliminar Imagen',
   click() {
-    socket.emit('removeImage', $(saveImageData).attr('imageId'));
+    if($(imageData).attr('usernameId') == socket.id){
+      socket.emit('removeImage', $(imageData).attr('imageId'));
+    }else{
+      addAlert('No puedes eliminar imágenes de otros usuarios', 'alert-yellow');
+    }
   }
 }));
 
@@ -99,7 +104,7 @@ var config = null; //Variable que almacena la configuración de usuario
 var userColorSelectedTmp = null; //Variable que almacena el color seleccionado en la configuración por el usuario
 var lastMessageIDSended = null; //Variable que almacena el identificador del ultimo mensaje enviado
 var messageData = null; //Variable que almacena la informacion del mensaje cuando se trabaja con contextmenu
-var saveImageData = null; //Variable que almacena la informacion de la imagen cuando se trabaja con contextmenu
+var imageData = null; //Variable que almacena la informacion de la imagen cuando se trabaja con contextmenu
 var isEditing = false; //Variable que almacena el estado de edición del usuario, si está editando un mensaje o no
 var blockedScroll = false; //Variable que almacena el estado de bloqueo de desplazamiento de la barra de desplazamiento
 
@@ -119,9 +124,9 @@ ipcRenderer.on('toggleNotifications', () => {
       addAlert('No se ha podido guardar la nueva configuración.', 'alert-red');
     }else{
       if(config.general.showNotifications){
-        addAlert('Se han habilitado las notificaciones', 'alert-purple');
+        ipcRenderer.send('newNotif', {'title': 'Aviso configuración', 'content': 'Se han habilitado las notificaciones'});
       }else{
-        addAlert('Se han deshabilitado las notificaciones', 'alert-purple');
+        ipcRenderer.send('newNotif', {'title': 'Aviso configuración', 'content': 'Se han deshabilitado las notificaciones'});
       }
     }
   });
@@ -383,8 +388,15 @@ function addNotification(content){
 }
 
 function getMentions(message){
-  var pattern = /\B<@[a-zA-Z0-9_-\s]+>/gi;
+  var pattern = /\B@[a-zA-Z0-9_-]+/gi;
   return message.match(pattern);
+}
+
+function urlify(text) {
+  var urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.replace(urlRegex, function(url) {
+      return '<a href="' + url + '">' + url + '</a>';
+  })
 }
 
 function connect(){
@@ -443,7 +455,7 @@ function connect(){
       finalImg = 'data:image/png;base64, ' + msg.b64Image.image;
     }
 
-    var attributes = {'src': finalImg, 'imageId': msg.hash};
+    var attributes = {'src': finalImg, 'imageId': msg.hash, 'usernameId': msg.usernameId};
     var img = $('<img>').attr(attributes).addClass('imageMsg'); //Crea el elemento imagen
     img.on('click', function(){ //Añade el evento onclick al elemento imagen
       showFullImage($(this).attr('src'));
@@ -451,7 +463,7 @@ function connect(){
 
     img.on('contextmenu', function(e) {
       e.preventDefault()
-      saveImageData = e.currentTarget;
+      imageData = e.currentTarget;
 
       rightClickPosition = {x: e.x, y: e.y};
       menuImage.popup(remote.getCurrentWindow());
@@ -476,19 +488,31 @@ function connect(){
 
     var lastMessageUsername = checkLastMessage();
     var attributes = {messageId: msg.hash, userId: msg.usernameId};
-    var msgText = $('<span>').attr(attributes).html(msg.content).addClass('text-line');
 
-    if(msg.mentions != null){
-      msg.mentions.forEach(function(mention){
-        if(mention.substring(2, mention.length - 1) == username || mention.substring(2, mention.length - 1) == 'everyone'){
+    var mentions = new Set(getMentions(msg.content));
+
+    if(mentions != null){
+      mentions.forEach(function(mention){
+        msg.content = msg.content.replace(new RegExp(mention, 'g'), '')
+      })
+    }
+
+    var msgText = $('<span>').attr(attributes).html(urlify(msg.content)).addClass('text-line');
+
+    if(mentions != null){
+      mentions.forEach(function(mention){
+        if(mention.substring(1, mention.length) == username || mention.substring(1, mention.length) == 'everyone'){
           var notifContent = msg.content;
 
           //Si el mensaje en el que te han notificado no tiene contenido
           if(notifContent == ''){
             notifContent = 'Te han mencionado en un mensaje';
           }
+          
+          if(msg.usernameId != socket.id){ // Si te mencionas a ti mismo o utilizas @everyone no te notifica
+            addNotification({'title': 'Nueva mención de: ' + msg.username, 'content': notifContent});
+          }
 
-          addNotification({'title': 'Nueva mención de: ' + msg.username, 'content': notifContent});
           msgText.addClass('mentionMsg');
         }
 
@@ -836,14 +860,19 @@ $(document).ready(function() {
     winFocus = true;
   }
 
-  window.addEventListener('paste', function(e){
-    var buff = e.clipboardData.items[0];
-    if (buff.type.split('/')[0] == 'image') {
-      var blob = buff.getAsFile();
+  window.addEventListener('paste', function(event){
+    var items = (event.clipboardData  || event.originalEvent.clipboardData).items;
+    var blob = null;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") === 0) {
+        blob = items[i].getAsFile();
+      }
+    }
+
+    if(blob != null){
       var reader = new FileReader();
-      reader.onload = function(event){
-        var b64Image = event.target.result;
-        socket.emit('image', {'image': b64Image, 'color': config.general.userColor, 'usernameId': socket.id});
+      reader.onload = function(event) {
+        socket.emit('image', {'image': event.target.result, 'color': config.general.userColor, 'usernameId': socket.id});
       };
       reader.readAsDataURL(blob);
     }
@@ -904,7 +933,7 @@ $(document).ready(function() {
     if(e.keyCode == 13){
       if($(this).val().trim() != ''){
         $(this).prop('disabled', true);
-        if($(this).val().trim().match(/^[a-zA-Z0-9\-_\s]+$/) != null && $(this).val().trim() != 'everyone'){
+        if($(this).val().trim().match(/^[a-zA-Z0-9\-_]+$/) != null && $(this).val().trim() != 'everyone'){
           username = $(this).val().trim();
           connect();
           addAlert('Estableciendo conexión con el servidor...', 'alert-blue');
@@ -922,8 +951,7 @@ $(document).ready(function() {
     if(e.keyCode == 13){
       if($(this).val().trim() != '' && socket.connected){
         var content = $('input#msgSendTextBox').val().trim();
-        var mentions = getMentions(content);
-        socket.emit('message', {'content': content, 'color': config.general.userColor, 'mentions': mentions});
+        socket.emit('message', {'content': content, 'color': config.general.userColor});
         $('input#msgSendTextBox').val('');
       }
     }
@@ -998,10 +1026,10 @@ $(document).ready(function() {
   var lastScrollTop = 0;
 
   $('#chat').scroll(function(){
-    var bottom = ($('#chat')[0].scrollHeight - $('#chat').height());
     var st = $(this).scrollTop(); //Valor numerico de la posicion de la barra de desplazamiento
-    if ((bottom - st) > 400){
-      $("#scrollBottomBtn").removeAttr('hidden');
+    var bottom = $('#chat')[0].scrollHeight - $('#chat').height();
+    if (bottom - st > 400){ 
+      $('#scrollBottomBtn').removeAttr('hidden');
     }
     if (st > lastScrollTop){ //Scroll hacia abajo
       if($('#chat')[0].scrollHeight - st == $('#chat').height()){
@@ -1009,18 +1037,23 @@ $(document).ready(function() {
           $('#chat')[0].scrollHeight   ---> Altura completa del elemento #chat, incluyendo la altura del elemento + altura total del scroll
           $('#chat').height()          ---> Altura del elemento #chat
         */
-        $("#scrollBottomBtn").attr('hidden', true);
+        $('#scrollBottomBtn').attr('hidden', true);
         blockedScroll = false;
         cleanBadge();
       }
     }else{ //Scroll hacia arriba
-      blockedScroll = true;
+      if ((bottom - st) > $('#chat').height() - 100){ //Cuando la posicion de la barra de desplazamiento sea de al menos 400 menos que la posicion máxima
+        $("#scrollBottomBtn").removeAttr('hidden');
+        blockedScroll = true;
+      }
     }
     lastScrollTop = st;
   });
-  $("#scrollBottomBtn").on('click', function(){
+
+  $('#scrollBottomBtn').on('click', function(){
     blockedScroll = false;
     $('#chat').animate({scrollTop: $('#chat')[0].scrollHeight}, 1000);
+    cleanBadge();
   });
 });
 
@@ -1028,6 +1061,11 @@ $(document).on('keypress', function(){
   if(mainWindowState){
     $('#msgSendTextBox').focus();
   }
+});
+
+$(document).on('click', 'a[href^="http"]', function(event) {
+  event.preventDefault();
+  shell.openExternal(this.href);
 });
 
 $(window).focus(function() {
