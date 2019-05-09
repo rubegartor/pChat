@@ -827,3 +827,42 @@ a:hover{
 a:active{
   color: #2980b9;
 }
+
+
+
+
+.autocomplete {
+  position: absolute;
+  width: calc(100% - 75px);
+  min-height: calc(100% - 10px);
+  bottom: 0;
+  left: 10px;
+  overflow-y: auto;
+}
+.autocomplete-items {
+  position: absolute;
+  width: 100%;
+  z-index: 99;
+  bottom: 0;
+}
+
+.autocomplete-items div {
+  padding: 8px 10px;
+  cursor: pointer;
+  background-color: rgba(99,110,114, 0.3);
+  color: #FFFFFF;
+}
+
+.autocomplete-items div:first-child{
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.autocomplete-items div:last-child{
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.autocomplete-items div:hover {
+  background-color: rgba(99,110,114, 0.2);
+}

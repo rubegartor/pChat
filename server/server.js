@@ -3,9 +3,9 @@ const io = require('socket.io')(server)
 const fs = require('fs')
 const crypto = require('crypto')
 const minimist = require('minimist')
-const createDOMPurify = require('dompurify');
-const { JSDOM } = require('jsdom');
-var striptags = require('striptags');
+const createDOMPurify = require('dompurify')
+const { JSDOM } = require('jsdom')
+var striptags = require('striptags')
 
 argv = minimist(process.argv.slice(2))
 port = 1234
@@ -13,8 +13,8 @@ userList = [] //Lista de nicknames conectados
 users = {} //Diccionario por key(user.id) conectados
 files = {} //Diccionario para almacenar las ids de los archivos junto al nombre del archivo
 
-const window = (new JSDOM('')).window;
-const DOMPurify = createDOMPurify(window);
+const window = (new JSDOM('')).window
+const DOMPurify = createDOMPurify(window)
 
 function Image(username, userColor, usernameId, b64Image, hash){
   this.username = username
@@ -51,11 +51,6 @@ function sha1(string) {
   return crypto.createHash('sha1').update(string, 'binary').digest('hex')
 }
 
-function getMentions(message){
-  var pattern = /\B@[a-zA-Z0-9_-]+/gi;
-  return message.match(pattern);
-}
-
 io.on('connection', function(client) {
   console.log('User connected (' + client.id + ')')
   client.on('checkUsername', function(username){
@@ -80,9 +75,10 @@ io.on('connection', function(client) {
   client.on('message', function(message){
     var messageHash = sha1(new Date().getTime() + users[client.id]['username'])
 
-    var finalMessage = DOMPurify.sanitize(striptags(message.content, ['u', 'i', 'b']));
+    var finalMessage = DOMPurify.sanitize(striptags(message.content, ['u', 'i', 'b']))
+    var haveText = DOMPurify.sanitize(striptags(message.content)).length
 
-    if(finalMessage.trim().length > 0){
+    if(finalMessage.trim().length > 0 && haveText > 0){
       io.emit('messageResponse', new Message(users[client.id]['username'], message.color, client.id, finalMessage, messageHash))
     }
   })
@@ -133,7 +129,15 @@ io.on('connection', function(client) {
   })
 
   client.on('editMessage', function(data){
-    io.emit('editMessageResponse', data)
+    var haveText = DOMPurify.sanitize(striptags(data.newMsg)).trim().length
+
+    if(haveText > 0){
+      data.newMsg = DOMPurify.sanitize(striptags(data.newMsg, ['u', 'i', 'b']))
+      io.emit('editMessageResponse', data)
+    }else{
+      data.newMsg = data.prevMsg
+      io.emit('editMessageResponse', data)
+    }
   })
 
   client.on('updateColor', function(data){

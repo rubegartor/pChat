@@ -16,6 +16,7 @@ menuMessage.append(new MenuItem ({
   click() {
     if(!isEditing){
       isEditing = true;
+      $('#autocomplete-list').hide();
 
       var message = $(messageData.element.currentTarget); //Obtiene el elemento principal del mensaje
       var messageId = message.attr('messageId'); //Obtiene el messageId del elemento
@@ -393,10 +394,14 @@ function getMentions(message){
 }
 
 function urlify(text) {
-  var urlRegex = /(https?:\/\/[^\s]+)/g;
-  return text.replace(urlRegex, function(url) {
+  try{
+    var urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, function(url) {
       return '<a href="' + url + '">' + url + '</a>';
-  })
+    })
+  }catch(err){
+    return text;
+  }
 }
 
 function connect(){
@@ -615,13 +620,18 @@ function connect(){
   });
 
   socket.on('getUsersResponse', function(online){
+    var users = ['@everyone'];
     $('#panel-user').html(''); //Limpiar el panel antes de añadir usuarios a la lista para evitar stackear duplicados
+
     online.forEach(el => {
+      users.push('@' + el.username);
       var user = $('<span>').text(el.username).addClass('username');
       var time = $('<span>').text(getTime(el.time)).addClass('time');
       var userBg = $('<div>').append(user).append(time).addClass('user-bg');
       $('#panel-user').append(userBg);
     });
+
+    autocomplete(document.getElementById('msgSendTextBox'), users);
   });
 
   socket.on('removeMessageResponse', function(messageId){
@@ -658,9 +668,11 @@ function connect(){
 
   socket.on('editMessageResponse', function(data){
     var element = $('span[messageid="' + data.messageId + '"]');
-    element.text(data.newMsg);
-    element.append($('<span>').text('(editado)').addClass('edited'));
-    element.attr({'edited': 'true'});
+    element.html(urlify(data.newMsg));
+    if(data.newMsg != data.prevMsg || element.attr('edited') == 'true'){
+      element.append($('<span>').text('(editado)').addClass('edited'));
+      element.attr({'edited': 'true'});
+    }
     scrollToBottom();
   });
 
@@ -952,12 +964,15 @@ $(document).ready(function() {
       if($(this).val().trim() != '' && socket.connected){
         var content = $('input#msgSendTextBox').val().trim();
         socket.emit('message', {'content': content, 'color': config.general.userColor});
+        $('#autocomplete-list').hide();
         $('input#msgSendTextBox').val('');
       }
     }
 
     if(e.keyCode == 38 && $('#chat>ul').children().length != 0 && !isEditing){
       isEditing = true;
+
+      $('#autocomplete-list').hide();
 
       if($('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').length > 0){ //Si el mensaje tiene el elemento "(editado)"
         $('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').remove(); //Se elimina el elemento contenedor de "(editado)"
@@ -977,7 +992,7 @@ $(document).ready(function() {
           var newInputText = $(this).val();
           if(newInputText != msgText || message.attr('edited') == 'true'){ //Si el mensaje es diferente del existente o el mensaje ya ha sido editado alguna vez
             if(newInputText != ''){ //Si el mensaje anterior ha cambiado respecto al antiguo
-              socket.emit('editMessage', {'messageId': lastMessageIDSended, 'newMsg': newInputText});
+              socket.emit('editMessage', {'messageId': lastMessageIDSended, 'prevMsg': msgText, 'newMsg': newInputText});
             }else{ //Si el nuevo texto para el mensaje esta vacío
               socket.emit('removeMessage', lastMessageIDSended);
             }
@@ -1043,7 +1058,7 @@ $(document).ready(function() {
       }
     }else{ //Scroll hacia arriba
       if ((bottom - st) > $('#chat').height() - 100){ //Cuando la posicion de la barra de desplazamiento sea de al menos 400 menos que la posicion máxima
-        $("#scrollBottomBtn").removeAttr('hidden');
+        $('#scrollBottomBtn').removeAttr('hidden');
         blockedScroll = true;
       }
     }
@@ -1071,3 +1086,43 @@ $(document).on('click', 'a[href^="http"]', function(event) {
 $(window).focus(function() {
   cleanBadge();
 });
+
+function autocomplete(inp, arr) {
+  inp.addEventListener('input', function(e) {
+    $('#autocomplete-list').show();
+    var a, b, i, val = this.value;
+    closeAllLists();
+    if (!val) { return false;}
+    currentFocus = -1;
+    a = document.createElement('div');
+    a.setAttribute('id', this.id + 'autocomplete-list');
+    a.setAttribute('class', 'autocomplete-items');
+    document.getElementById('autocomplete-list').appendChild(a);
+    for (i = 0; i < arr.length; i++) {
+      if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+        b = document.createElement('div');
+        b.innerHTML = '<strong>' + arr[i].substr(0, val.length) + '</strong>';
+        b.innerHTML += arr[i].substr(val.length);
+        b.innerHTML += '<input type="hidden" value="' + arr[i] + '">';
+        b.addEventListener('click', function(e) {
+          inp.value = this.getElementsByTagName('input')[0].value;
+          closeAllLists();
+        });
+        a.appendChild(b);
+      }
+    }
+  });
+
+  function closeAllLists(elmnt) {
+    var x = document.getElementsByClassName('autocomplete-items');
+    for (var i = 0; i < x.length; i++) {
+      if (elmnt != x[i] && elmnt != inp) {
+        x[i].parentNode.removeChild(x[i]);
+      }
+    }
+  }
+
+  document.addEventListener('click', function (e) {
+    closeAllLists(e.target);
+  });
+}
