@@ -489,21 +489,24 @@ function connect(){
   });
 
   socket.on('messageResponse', function(msg){
-    updateBadge();
+    updateBadge(); //Se actualiza el icono de la aplicacion con el numero de mensajes sin leer
 
-    var lastMessageUsername = checkLastMessage();
-    var attributes = {messageId: msg.hash, userId: msg.usernameId};
+    var lastMessageUsername = checkLastMessage(); //Obtiene el usuario que ha mandado el ultimo mensaje al chat
+    var attributes = {messageId: msg.hash, userId: msg.usernameId}; //Atributos del elemento
 
-    var mentions = new Set(getMentions(msg.content));
+    var mentions = new Set(getMentions(msg.content)); //Las menciones que se añadirán al final del mensaje
 
+    //Se eliminan las menciones en formato de texto del mensaje
     if(mentions != null){
       mentions.forEach(function(mention){
         msg.content = msg.content.replace(new RegExp(mention, 'g'), '')
       })
     }
 
+    //Se crea el elemento principal con los atributos y el contenido del mensaje
     var msgText = $('<span>').attr(attributes).html(urlify(msg.content)).addClass('text-line');
 
+    //Se añaden las menciones al final del mensaje
     if(mentions != null){
       mentions.forEach(function(mention){
         if(mention.substring(1, mention.length) == username || mention.substring(1, mention.length) == 'everyone'){
