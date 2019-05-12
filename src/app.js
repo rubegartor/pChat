@@ -499,7 +499,7 @@ function connect(){
     //Se eliminan las menciones en formato de texto del mensaje
     if(mentions != null){
       mentions.forEach(function(mention){
-        msg.content = msg.content.replace(new RegExp(mention, 'g'), '')
+        msg.content = msg.content.replace(new RegExp(mention, 'g'), '');
       })
     }
 
@@ -974,7 +974,6 @@ $(document).ready(function() {
 
     if(e.keyCode == 38 && $('#chat>ul').children().length != 0 && !isEditing){
       isEditing = true;
-
       $('#autocomplete-list').hide();
 
       if($('#chat>ul>li>span[messageid="' + lastMessageIDSended + '"]>span.edited').length > 0){ //Si el mensaje tiene el elemento "(editado)"

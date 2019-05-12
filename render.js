@@ -55,7 +55,7 @@ function createWindow () {
   
       win.setMenu(null)
       win.loadFile(path.join(__dirname, 'src/index.html'))
-      win.webContents.openDevTools()
+      //win.webContents.openDevTools()
       tray = new Tray(iconPath)
       tray.setToolTip('pChat');
   
