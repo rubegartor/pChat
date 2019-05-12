@@ -1035,11 +1035,6 @@ $(document).ready(function() {
     }
   });
 
-  $('#webdev-btn').on('click', function() {
-    var window = remote.getCurrentWindow();
-    window.openDevTools()
-  });
-
   var lastScrollTop = 0;
 
   $('#chat').scroll(function(){
