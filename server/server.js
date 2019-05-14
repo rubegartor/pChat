@@ -1,163 +1,100 @@
 const server = require('http').createServer()
 const io = require('socket.io')(server)
 const fs = require('fs')
-const crypto = require('crypto')
 const minimist = require('minimist')
-const createDOMPurify = require('dompurify')
-const { JSDOM } = require('jsdom')
-var striptags = require('striptags')
+const mongoose = require('mongoose')
 
 argv = minimist(process.argv.slice(2))
-port = 1234
-userList = [] //Lista de nicknames conectados
-users = {} //Diccionario por key(user.id) conectados
-files = {} //Diccionario para almacenar las ids de los archivos junto al nombre del archivo
+let port = 1234
 
-const window = (new JSDOM('')).window
-const DOMPurify = createDOMPurify(window)
+mongoose.connect('mongodb://127.0.0.1/pChat', {useNewUrlParser: true})
+mongoose.Promise = global.Promise
+let db = mongoose.connection
 
-function Image(username, userColor, usernameId, b64Image, hash){
-  this.username = username
-  this.userColor = userColor
-  this.usernameId = usernameId
-  this.b64Image = b64Image
-  this.hash = hash
-}
+db.on('error', console.error.bind(console, 'MongoDB connection error:'))
 
-function Message(username, userColor, usernameId, content, hash, mentions){
-  this.username = username
-  this.userColor = userColor
-  this.usernameId = usernameId
-  this.content = content
-  this.hash = hash
-}
+var sch_channel = mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId,
+  name: String,
+  messages: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Messages'
+  }]
+})
 
-function FileResponse(username, userColor, filename, hash, size, usernameId){
-  this.username = username
-  this.userColor = userColor
-  this.filename = filename
-  this.hash = hash
-  this.size = size
-  this.usernameId = usernameId
-}
+var sch_messages = mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId,
+  id: String,
+  user_id: String,
+  username: String,
+  content: String,
+  time: String,
+  channel: String,
+  state: Object
+})
 
-function File(filename, buffer, extension){
-  this.filename = filename
-  this.buffer = buffer
-  this.extension = extension
-}
+var Channel = mongoose.model('Channels', sch_channel)
+var Message = mongoose.model('Messages', sch_messages)
 
-function sha1(string) {
-  return crypto.createHash('sha1').update(string, 'binary').digest('hex')
-}
-
-io.on('connection', function(client) {
+io.on('connection', (client) => {
   console.log('User connected (' + client.id + ')')
-  client.on('checkUsername', function(username){
-    var filtered = userList.filter(function(el){
-      return el.username === username //Devuelve el objeto que coincida
+
+  Channel.find().populate('messages').exec((err, item) => {
+    io.to(client.id).emit('setChannels', item)
+  })
+
+  client.on('message', (message) => {
+    var msg = new Message({
+      _id: new mongoose.mongo.ObjectId(),
+      id: message.id,
+      user_id: message.user_id,
+      username: message.username,
+      content: message.content,
+      time: message.time,
+      channel: message.channel,
+      state: message.state
     })
 
-    if(filtered.length == 0){
-      io.to(client.id).emit('checkUserResponse', false)
-    }else{
-      io.to(client.id).emit('checkUserResponse', true)
-    }
+    msg.save((err) => {
+      if(err) return console.error(err)
+    })
+
+    Channel.updateOne({name: message.channel}, {$push: {messages: msg._id}}).exec()
+
+    io.emit('messageResponse', message)
   })
 
-  client.on('newUsername', function(username){
-    users[client.id] = {'username': username}
-    userList.push({'id': client.id,'username': username, 'time': new Date()})
-    io.emit('userConnected', username)
-    io.emit('getUsersResponse', userList)
-  })
-
-  client.on('message', function(message){
-    var messageHash = sha1(new Date().getTime() + users[client.id]['username'])
-
-    var finalMessage = DOMPurify.sanitize(striptags(message.content, ['u', 'i', 'b']))
-    var haveText = DOMPurify.sanitize(striptags(message.content)).length
-
-    if(finalMessage.trim().length > 0 && haveText > 0){
-      io.emit('messageResponse', new Message(users[client.id]['username'], message.color, client.id, finalMessage, messageHash))
-    }
-  })
-
-  client.on('image', function(image){
-    var imageHash = sha1(new Date().getTime() + users[client.id]['username'])
-    io.emit('imageResponse', new Image(users[client.id]['username'], image.color, client.id, image, imageHash))
-  })
-
-  client.on('file', function(file){
-    var fileHash = sha1(new Date().getTime() + file.name)
-    var extension = file.name.split('.')[1]
-    files[fileHash] = {'name': file.name, 'userId': client.id, 'extension': extension}
-
-    if (!fs.existsSync('./uploads/')){
-      fs.mkdirSync('./uploads/')
-    }
-
-    fs.writeFile('./uploads/' + fileHash + '.' + extension, file.buffer, function(err){
-      if(err){
-        console.log(err)
-      }else{
-        io.emit('fileResponse', new FileResponse(users[client.id]['username'], file.color, file.name, fileHash, file.size, client.id))
-      }
+  client.on('getChannelMessages', (channel) => {
+    Channel.findOne({name: channel}).populate('messages').exec((err, item) => {
+      io.to(client.id).emit('getChannelMessagesResponse', item)
     })
   })
 
-  client.on('downloadFile', function(data){
-    fs.readFile('./uploads/' + data.hash + '.' + files[data.hash].extension, function(err, buffer){
-      if(err){
-        console.log(err)
-      }else{
-        io.to(client.id).emit('downloadResponse', new File(files[data.hash].name, buffer, files[data.hash].extension))
-      }
+  client.on('removeMessage', (message) => {
+    Message.deleteOne({id: message.id}).exec();
+
+    io.emit('removeMessageResponse', message)
+  })
+
+  client.on('createChannel', (channel) => {
+    var chn = new Channel({
+      _id: new mongoose.mongo.ObjectId(),
+      name: channel.name,
+      messages: []
     })
+
+    chn.save((err) => {
+      if(err) return console.error(err)
+    })
+
+    //io.emit('createChannelResponse', channel)
   })
 
-  client.on('getUsers', function(){
-    io.emit('getUsersResponse', userList)
-  })
-
-  client.on('removeMessage', function(messageId){
-    io.emit('removeMessageResponse', messageId)
-  })
-
-  client.on('removeImage', function(imageId){
-    io.emit('removeImageResponse', imageId)
-  })
-
-  client.on('editMessage', function(data){
-    var haveText = DOMPurify.sanitize(striptags(data.newMsg)).trim().length
-
-    if(haveText > 0){
-      data.newMsg = DOMPurify.sanitize(striptags(data.newMsg, ['u', 'i', 'b']))
-      io.emit('editMessageResponse', data)
-    }else{
-      data.newMsg = data.prevMsg
-      io.emit('editMessageResponse', data)
-    }
-  })
-
-  client.on('updateColor', function(data){
-    io.emit('updateColorResponse', data)
-  })
-
-  client.on('disconnect', function() {
+  client.on('disconnect', () => {
     console.log('Client disconnected: ', client.id)
-    try{
-      io.emit('userDisconnected', users[client.id]['username'])
-      var filtered = userList.filter(function(el){
-        return el.id === client.id //Devuelve el objeto que coincida
-      })
-      userList.splice(userList.indexOf(filtered[0]), 1)
-      delete users[client.id]
-      io.emit('getUsersResponse', userList)
-    }catch{}
   })
 
-  client.on('error', function (err) {
+  client.on('error', (err) => {
     console.log('Error from client => ', client.id)
     console.log(err)
   })
@@ -167,7 +104,7 @@ if(argv['p'] != undefined){
   port = argv['p']
 }
 
-server.listen(port, function (err) {
+server.listen(port, (err) => {
   if (err) throw err
   console.log('Starting server...')
   console.log('Server info => http://0.0.0.0:' + port + '/')
