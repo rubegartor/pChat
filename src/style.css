@@ -849,7 +849,7 @@ a:active{
 .autocomplete-items div {
   padding: 8px 10px;
   cursor: pointer;
-  background-color: rgba(99,110,114, 0.3);
+  background-color: #444B50;
   color: #FFFFFF;
 }
 
@@ -864,5 +864,5 @@ a:active{
 }
 
 .autocomplete-items div:hover {
-  background-color: rgba(99,110,114, 0.2);
+  background-color: #393E41;
 }
