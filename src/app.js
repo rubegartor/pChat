@@ -3,17 +3,27 @@ const io = require('socket.io-client')
 const remote = require('electron').remote
 const vars = require('./inc/vars')
 const funcs = require('./inc/general')
+const contextFuncs = require('./inc/contextFuncs')
 const Message = require('./inc/message')
 const Channel = require('./inc/channel')
 
 let contextMenuVisible = false
 var username = 'SoyUnUsuario'
 
-vars.socket = io.connect('http://marsweb.ddns.net:1234')
+vars.socket = io.connect('http://127.0.0.1:1234')
 
 require('./inc/io-listener')()
 
 $(document).ready(function(){
+  var messageContextMenuOptions = [
+    $('<li>').addClass('menu-option').attr('id', 'contextmenu-editMsgBtn').text('Editar mensaje'),
+    $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeMsgBtn').text('Eliminar mensaje')
+  ]
+
+  var messageContextMenuFuncs = [contextFuncs.editMessage, contextFuncs.removeMessage]
+
+  funcs.addContextMenu($('#chat-messages'), messageContextMenuOptions, messageContextMenuFuncs)
+
   $('#close-btn').on('click', () => {
     var window = remote.getCurrentWindow()
     window.close()
@@ -84,34 +94,5 @@ $(document).ready(function(){
   
   $(window).on('click', () => {
     if(contextMenuVisible) funcs.toggleMenu($('.contextmenu'), 'hide')
-  })
-
-  $('#chat-messages').on('contextmenu', '.message-line', (e) => {
-    e.preventDefault()
-
-    $('#contextmenu > ul').html('')
-    $('#contextmenu > ul').append($('<li>').addClass('menu-option').attr('id', 'contextmenu-editMsgBtn').text('Editar mensaje'))
-    $('#contextmenu > ul').append($('<li>').addClass('menu-option').attr('id', 'contextmenu-removeMsgBtn').text('Eliminar mensaje'))
-
-    var id = $(e.currentTarget).attr('id')
-
-    $('#contextmenu').off().on('click', '#contextmenu-removeMsgBtn', () => {
-      var message = $('span[id="' + id + '"]')
-      var content = $('span[id="' + id + '"]').text()
-      var user_id = message.attr('user_id')
-      var username = message.parent().prev().find('span.message-username').text()
-      var time = message.parent().prev().find('span.message-time').text()
-
-      var messageObj = new Message(id, user_id, username, time, vars.activeChannel, content)
-      messageObj.remove()
-      if(contextMenuVisible) funcs.toggleMenu($('.contextmenu'), 'hide')
-    })
-
-    const origin = {
-      left: e.pageX,
-      top: e.pageY
-    }
-
-    funcs.setPosition($('#contextmenu'), origin)
   })
 })
