@@ -71,7 +71,7 @@ io.on('connection', (client) => {
   })
 
   client.on('removeMessage', (message) => {
-    Message.deleteOne({id: message.id}).exec();
+    Message.deleteOne({id: message.id}).exec()
 
     io.emit('removeMessageResponse', message)
   })
@@ -87,7 +87,7 @@ io.on('connection', (client) => {
       if(err) return console.error(err)
     })
 
-    //io.emit('createChannelResponse', channel)
+    io.emit('createChannelResponse', channel)
   })
 
   client.on('disconnect', () => {
