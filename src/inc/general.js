@@ -23,6 +23,10 @@ module.exports = {
   loadChannelMessages: () => {
     $('#chat-messages').html('')
     vars.socket.emit('getChannelMessages', vars.activeChannel)
+  },
+
+  scroll: () =>{
+    $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight - $('#chat-messages')[0].clientHeight);
   }
 };
 
