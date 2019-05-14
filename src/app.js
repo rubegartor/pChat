@@ -53,13 +53,16 @@ $(document).ready(function(){
   })
 
   $('#createChannelBtn').on('click', () => {
-    var input = $('<input>').addClass('channelInput')
+    var input = $('<input>').addClass('channelInput').attr('placeholder', 'Nuevo canal...')
     $('#chnl-panel').append(input)
     input.on('keypress', (e) => {
       if(e.which == 13){
         var channelName = input.val().replace(new RegExp('#', 'g'), '').trim()
         if(channelName.length > 0){
-          new Channel('#' + channelName).create()
+          var chn = new Channel('#' + channelName)
+          chn.create()
+          input.remove()
+          $('#chnl-panel').append(chn.toHTML())
         }
       }
     })

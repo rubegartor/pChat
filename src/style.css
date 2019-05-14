@@ -393,3 +393,7 @@ a:active{
   font-size: 0.95rem;
   color: #dce0eb;
 }
+
+.channelInput::placeholder{
+  color: rgba(255, 255, 255, 0.6);
+}
