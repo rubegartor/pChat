@@ -516,7 +516,7 @@ function connect(){
           if(notifContent == ''){
             notifContent = 'Te han mencionado en un mensaje';
           }
-          
+
           if(msg.usernameId != socket.id){ // Si te mencionas a ti mismo o utilizas @everyone no te notifica
             addNotification({'title': 'Nueva mención de: ' + msg.username, 'content': notifContent});
           }
@@ -972,6 +972,10 @@ $(document).ready(function() {
       }
     }
 
+    if($('input#msgSendTextBox').val() == ""){
+      $('#autocomplete-list').hide();
+    }
+
     if(e.keyCode == 38 && $('#chat>ul').children().length != 0 && !isEditing){
       isEditing = true;
       $('#autocomplete-list').hide();
@@ -1040,7 +1044,7 @@ $(document).ready(function() {
   $('#chat').scroll(function(){
     var st = $(this).scrollTop(); //Valor numerico de la posicion de la barra de desplazamiento
     var bottom = $('#chat')[0].scrollHeight - $('#chat').height();
-    if (bottom - st > 400){ 
+    if (bottom - st > 400){
       $('#scrollBottomBtn').removeAttr('hidden');
     }
     if (st > lastScrollTop){ //Scroll hacia abajo
