@@ -20,9 +20,16 @@ $(document).ready(function(){
     $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeMsgBtn').text('Eliminar mensaje')
   ]
 
-  var messageContextMenuFuncs = [contextFuncs.editMessage, contextFuncs.removeMessage]
+  var channelContextMenuOptions = [
+    $('<li>').addClass('menu-option').attr('id', 'contextmenu-editChannelBtn').text('Editar canal'),
+    $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeChannelBtn').text('Eliminar canal')
+  ]
 
-  funcs.addContextMenu($('#chat-messages'), messageContextMenuOptions, messageContextMenuFuncs)
+  var messageContextMenuFuncs = [contextFuncs.editMessage, contextFuncs.removeMessage]
+  var channelContextMenuFuncs = [contextFuncs.editChannel, contextFuncs.removeChannel]
+
+  funcs.addContextMenu($('#chat-messages'), '.message-line', messageContextMenuOptions, messageContextMenuFuncs)
+  funcs.addContextMenu($('#chnl-panel'), 'li', channelContextMenuOptions, channelContextMenuFuncs)
 
   $('#close-btn').on('click', () => {
     var window = remote.getCurrentWindow()

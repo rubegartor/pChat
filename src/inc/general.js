@@ -5,8 +5,8 @@ module.exports = {
     return crypto.createHash('sha1').update(string, 'binary').digest('hex')
   },
 
-  addContextMenu: function(element, options, funcs) {
-    element.on('contextmenu', '.message-line', (e) => {
+  addContextMenu: function(element, subElement, options, funcs) {
+    element.on('contextmenu', subElement, (e) => {
       e.preventDefault()
 
       $('#contextmenu > ul').html('')
@@ -27,6 +27,7 @@ module.exports = {
   addClickHandler: function(clickedElement, menuOptionId, func) {
     $(menuOptionId).on('click', () => {
       func(clickedElement)
+      this.toggleMenu($('#contextmenu'), 'hide')
     })
   },
 

@@ -1,6 +1,6 @@
 module.exports = {
   editMessage: (clickedElement) => {
-    console.log('edit')
+    console.log('edit Message')
   },
   
   removeMessage: (clickedElement) => {
@@ -13,5 +13,13 @@ module.exports = {
   
     var messageObj = new Message(id, user_id, username, time, vars.activeChannel, content)
     messageObj.remove()
+  },
+
+  editChannel: (clickedElement) => {
+    console.log('edit Channel')
+  },
+
+  removeChannel: (clickedElement) => {
+    console.log('remove Channel')
   }
 }
