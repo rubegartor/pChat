@@ -59,10 +59,8 @@ $(document).ready(function(){
       if(e.which == 13){
         var channelName = input.val().replace(new RegExp('#', 'g'), '').trim()
         if(channelName.length > 0){
-          var chn = new Channel('#' + channelName)
-          chn.create()
+          new Channel('#' + channelName).create()
           input.remove()
-          $('#chnl-panel').append(chn.toHTML())
         }
       }
     })
