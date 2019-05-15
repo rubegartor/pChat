@@ -1,4 +1,8 @@
-var crypto = require('crypto')
+const crypto = require('crypto')
+const contextFuncs = require('./contextFuncs')
+const remote = require('electron').remote
+
+let display = remote.screen.getPrimaryDisplay()
 
 module.exports = {
   sha1: (string) => {
@@ -88,7 +92,48 @@ module.exports = {
       $('#mainInput').prop('disabled', true)
       $('#chnl-hr').attr('data-content', "")
       vars.activeChannel = ""
-    } 
+    }
+  },
+
+  createNotification: (title, content, color, icon) => {
+    var window = remote.getCurrentWindow()
+    win = new remote.BrowserWindow({
+      width: (display.bounds.width * 0.25),
+      height: 100,
+      x: (display.bounds.width - (display.bounds.width * 0.25)) - 10,
+      y: (display.bounds.height - 100) - 50,
+      frame: false,
+      transparent: true,
+      resizable: false,
+      alwaysOnTop: true,
+      titleBarStyle: 'hidden',
+      skipTaskbar: true,
+      webPreferences: {
+        nodeIntegration: true
+      }
+    })
+  
+    win.loadFile('src/template/notif.html')
+
+    vars.activeNotifications.push(win)
+
+    win.webContents.on('did-finish-load', () => {
+      win.webContents.send('notif', {title: title, content: content, color: color, icon: icon})
+      window.focus()
+    })
+
+    win.show()
+
+    win.on('closed', () => {
+      vars.activeNotifications.splice(vars.activeNotifications.indexOf(win), 1)
+      win = null
+    })
+  },
+
+  closeAllWindows: () => {
+    vars.activeNotifications.forEach((win) => {
+      win.close()
+    })
   }
 };
 

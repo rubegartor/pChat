@@ -397,3 +397,81 @@ a:active{
 .channelInput::placeholder{
   color: rgba(255, 255, 255, 0.6);
 }
+
+.notification{
+  background-color: rgba(0, 0, 0, 0) !important;
+}
+
+.mainNotif{
+  background-color: rgb(54, 60, 66);
+  border-radius: 5px;
+  padding: 15px;
+  width: calc(100% - 30px);
+  height: calc(100vh - 30px);
+}
+
+.mainNotif .closeNotif{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.mainNotif .closeNotif:hover{
+  opacity: 0.6;
+}
+
+.mainNotif .notifLeft{
+  float: left;
+  width: 48px;
+  height: 100%;
+}
+
+.mainNotif .notifLeft .iconBg{
+  width: 24px;
+  height: 24px;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 50%;
+}
+
+.mainNotif .notifLeft .green{
+  background-color: #2ECC71;
+}
+
+.mainNotif .notifLeft .gray{
+  background-color: #6A6C75;
+}
+
+.mainNotif .notifLeft .red{
+  background-color: #E74C3C;
+}
+
+.mainNotif .notifLeft .yellow{
+  background-color: #F1C40F;
+}
+
+.mainNotif .notifRight{
+  float: right;
+  height: 100%;
+  width: calc(100% - 60px);
+}
+
+.mainNotif .notifRight{
+  font-size: 1.1em;
+}
+
+.mainNotif .notifRight .green{
+  color: #2ECC71;
+}
+
+.mainNotif .notifRight .gray{
+  color: #6A6C75;
+}
+
+.mainNotif .notifRight .red{
+  color: #E74C3C;
+}
+
+.mainNotif .notifRight .yellow{
+  color: #F1C40F;
+}

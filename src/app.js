@@ -1,23 +1,24 @@
 const $ = require('jquery')
 const io = require('socket.io-client')
-const remote = require('electron').remote
-const vars = require('./inc/vars')
-const funcs = require('./inc/general')
-const contextFuncs = require('./inc/contextFuncs')
-const Message = require('./inc/message')
-const Channel = require('./inc/channel')
+const electron = require('electron')
+const remote = electron.remote
+const vars = require('../inc/vars')
+const funcs = require('../inc/general')
+const Message = require('../inc/message')
+const Channel = require('../inc/channel')
 
 let contextMenuVisible = false
 var username = 'SoyUnUsuario'
 
 vars.socket = io.connect('http://127.0.0.1:1234')
 
-require('./inc/io-listener')()
+require('../inc/io-listener')()
 
 $(document).ready(function(){
   funcs.createContextMenus()
 
   $('#close-btn').on('click', () => {
+    funcs.closeAllWindows() //Si hay notificaciones activas las cierra antes de cerrar la ventana principal
     var window = remote.getCurrentWindow()
     window.close()
   })
