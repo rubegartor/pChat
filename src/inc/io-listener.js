@@ -6,14 +6,17 @@ module.exports = () => {
       $('#chnl-panel').append(chn.toHTML())
     })
 
-    $('#chnl-panel > li:first').click()
-    $('#chnl-hr').attr('data-content', $('#chnl-panel > li:first').text())
-    vars.activeChannel = $('#chnl-panel > li:first').text()
+    funcs.selectFirstChannel()
   })
 
   vars.socket.on('createChannelResponse', function(resp){
     var channel = new Channel(resp.name)
+    var channelLength = $('#chnl-panel > li').length
     $('#chnl-panel').append(channel.toHTML())
+
+    if(channelLength == 0){
+      funcs.selectFirstChannel()
+    }
   })
 
   vars.socket.on('messageResponse', (resp) => {
@@ -64,6 +67,15 @@ module.exports = () => {
       elementParent.remove()
       elementTime.remove()
       elementUser.remove()
+    }
+  })
+
+  vars.socket.on('removeChannelResponse', (channel) => {
+    var chnElement = $('#chnl-panel > li:contains("' + channel.name + '")')
+    chnElement.remove()
+    if($('#chnl-panel > li.active-channel').length == 0){
+      $('#chat-messages').html('')
+      funcs.selectFirstChannel()
     }
   })
 }

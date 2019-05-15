@@ -49,13 +49,46 @@ module.exports = {
     this.toggleMenu(menu, 'show')
   },
 
+  createContextMenus: function() {
+    var messageContextMenuOptions = [
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-editMsgBtn').text('Editar mensaje'),
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeMsgBtn').text('Eliminar mensaje')
+    ]
+  
+    var channelContextMenuOptions = [
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-editChannelBtn').text('Editar canal'),
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeChannelBtn').text('Eliminar canal')
+    ]
+  
+    var messageContextMenuFuncs = [contextFuncs.editMessage, contextFuncs.removeMessage]
+    var channelContextMenuFuncs = [contextFuncs.editChannel, contextFuncs.removeChannel]
+  
+    this.addContextMenu($('#chat-messages'), '.message-line', messageContextMenuOptions, messageContextMenuFuncs)
+    this.addContextMenu($('#chnl-panel'), 'li', channelContextMenuOptions, channelContextMenuFuncs)
+  },
+
   loadChannelMessages: () => {
     $('#chat-messages').html('')
     vars.socket.emit('getChannelMessages', vars.activeChannel)
   },
 
-  scroll: () =>{
+  scroll: () => {
     $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight - $('#chat-messages')[0].clientHeight);
+  },
+
+  selectFirstChannel: () => {
+    if($('#chnl-panel > li').length > 0){
+      if($('#chnl-panel > li:first').text() != vars.activeChannel){
+        $('#chnl-panel > li:first').click()
+        $('#mainInput').prop('disabled', false)
+        $('#chnl-hr').attr('data-content', $('#chnl-panel > li:first').text())
+        vars.activeChannel = $('#chnl-panel > li:first').text()
+      }
+    }else{
+      $('#mainInput').prop('disabled', true)
+      $('#chnl-hr').attr('data-content', "")
+      vars.activeChannel = ""
+    } 
   }
 };
 

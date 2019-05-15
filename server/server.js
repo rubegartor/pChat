@@ -90,6 +90,11 @@ io.on('connection', (client) => {
     io.emit('createChannelResponse', channel)
   })
 
+  client.on('removeChannel', (channel) => {
+    Channel.deleteOne({name: channel.name}).exec()
+    io.emit('removeChannelResponse', channel)
+  })
+
   client.on('disconnect', () => {
     console.log('Client disconnected: ', client.id)
   })

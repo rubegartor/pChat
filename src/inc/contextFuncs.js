@@ -20,6 +20,7 @@ module.exports = {
   },
 
   removeChannel: (clickedElement) => {
-    console.log('remove Channel')
+    var channel = new Channel(clickedElement.text())
+    channel.remove()
   }
 }

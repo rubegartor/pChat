@@ -10,6 +10,10 @@ module.exports = class Channel{
     vars.socket.emit('createChannel', this)
   }
 
+  remove(){
+    vars.socket.emit('removeChannel', this)
+  }
+
   toHTML(){
     return $('<li>').text(this.name)
   }
