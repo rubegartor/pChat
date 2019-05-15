@@ -1,0 +1,8 @@
+{
+  "port": 1234,
+  "dbURL": "mongodb://localhost/pChat",
+  "certs": {
+    "serverKey": "./keys/server-key.pem",
+    "serverCert": "./keys/server-cert.pem"
+  }
+}
