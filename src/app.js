@@ -8,9 +8,15 @@ const Message = require('../inc/message')
 const Channel = require('../inc/channel')
 
 let contextMenuVisible = false
-var username = 'SoyUnUsuario'
+var username = 'rubegartor'
 
-vars.socket = io.connect('http://127.0.0.1:1234')
+const socketOptions = {
+  secure: true,
+  reconnect: true,
+  rejectUnauthorized : false //INFO: Si el certificado es self-signed necesitas utilizar rejectUnauthorized = false, por lo tanto se queda expuesto a un posible ataque MiTM
+}
+
+vars.socket = io.connect('https://localhost:1234', socketOptions)
 
 require('../inc/io-listener')()
 

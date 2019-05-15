@@ -1,19 +1,21 @@
-const server = require('http').createServer()
-const io = require('socket.io')(server)
 const fs = require('fs')
-const minimist = require('minimist')
+const config = JSON.parse(fs.readFileSync('settings.json', 'utf-8'))
+const server = require('https').createServer({
+  key: fs.readFileSync(config.certs.serverKey, 'utf-8'),
+  cert: fs.readFileSync(config.certs.serverCert, 'utf-8')
+})
+const io = require('socket.io')(server)
 const mongoose = require('mongoose')
 
-argv = minimist(process.argv.slice(2))
-let port = 1234
-
-mongoose.connect('mongodb://127.0.0.1/pChat', {useNewUrlParser: true})
+mongoose.connect(config.dbURL, {useNewUrlParser: true})
 mongoose.Promise = global.Promise
 let db = mongoose.connection
 
-db.on('error', console.error.bind(console, 'MongoDB connection error:'))
+db.on('error', () => {
+  console.log('[ERROR] Cannot connect to MongoDB server')
+})
 
-var sch_channel = mongoose.Schema({
+let channelSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
   name: String,
   messages: [{
@@ -22,7 +24,7 @@ var sch_channel = mongoose.Schema({
   }]
 })
 
-var sch_messages = mongoose.Schema({
+let messagesSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
   id: String,
   user_id: String,
@@ -33,8 +35,8 @@ var sch_messages = mongoose.Schema({
   state: Object
 })
 
-var Channel = mongoose.model('Channels', sch_channel)
-var Message = mongoose.model('Messages', sch_messages)
+let Channel = mongoose.model('Channels', channelSchema)
+let Message = mongoose.model('Messages', messagesSchema)
 
 io.on('connection', (client) => {
   console.log('User connected (' + client.id + ')')
@@ -105,12 +107,7 @@ io.on('connection', (client) => {
   })
 })
 
-if(argv['p'] != undefined){
-  port = argv['p']
-}
-
-server.listen(port, (err) => {
+server.listen(config.port, (err) => {
   if (err) throw err
-  console.log('Starting server...')
-  console.log('Server info => http://0.0.0.0:' + port + '/')
+  console.log('Starting server...\nServer info => https://0.0.0.0:' + config.port + '/')
 })
