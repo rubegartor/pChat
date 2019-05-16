@@ -81,7 +81,7 @@ $(document).ready(function(){
     if(e.which == 13){
       if($(this).val().trim() != ''){
         var datetime = new Date()
-        var time = datetime.getHours() + ":" + datetime.getMinutes()
+        var time = ('0' + datetime.getHours()).slice(-2) + ":" + ('0' + datetime.getMinutes()).slice(-2)
         var message = new Message(funcs.sha1((datetime.getTime() + vars.socket.id).toString()), vars.socket.id, username, time, vars.activeChannel, $(this).val().trim())
         message.send()
       }
