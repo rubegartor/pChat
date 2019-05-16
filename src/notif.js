@@ -1,6 +1,8 @@
 const $ = require('jquery')
 const remote = require('electron').remote
-const {ipcRenderer} = require('electron');
+const {ipcRenderer} = require('electron')
+
+let window = remote.getCurrentWindow()
 
 ipcRenderer.on('notif', function (e, data) {
   $('#iconBg').addClass(data.color)
@@ -13,7 +15,6 @@ $(document).ready(function(){
   startAnim()
 
   $('#closeNotif').on('click', () => {
-    var window = remote.getCurrentWindow()
     window.close()
   })
 
@@ -26,7 +27,6 @@ $(document).ready(function(){
   function startAnim(){
     setTimeout(() => {
       $('.notification').fadeOut(2600, () => {
-        var window = remote.getCurrentWindow()
         window.close()
       })
     }, 2500)

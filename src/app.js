@@ -24,7 +24,11 @@ $(document).ready(function(){
   funcs.createContextMenus()
 
   $('#close-btn').on('click', () => {
-    funcs.closeAllWindows() //Si hay notificaciones activas las cierra antes de cerrar la ventana principal
+    if(vars.activeNotification != null){
+      try{
+        vars.activeNotification.close() //Si la notificación esta abierta se cierra
+      }catch(err){}
+    }
     var window = remote.getCurrentWindow()
     window.close()
   })

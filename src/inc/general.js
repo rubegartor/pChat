@@ -96,6 +96,11 @@ module.exports = {
   },
 
   createNotification: (title, content, color, icon) => {
+    if(vars.activeNotification != null){
+      try{
+        vars.activeNotification.close()
+      }catch(err){}
+    }
     var window = remote.getCurrentWindow()
     win = new remote.BrowserWindow({
       width: (display.bounds.width * 0.25),
@@ -112,28 +117,17 @@ module.exports = {
         nodeIntegration: true
       }
     })
-  
+
     win.loadFile('src/template/notif.html')
+    win.webContents.openDevTools()
 
-    vars.activeNotifications.push(win)
-
+    vars.activeNotification = win
     win.webContents.on('did-finish-load', () => {
       win.webContents.send('notif', {title: title, content: content, color: color, icon: icon})
       window.focus()
     })
 
     win.show()
-
-    win.on('closed', () => {
-      vars.activeNotifications.splice(vars.activeNotifications.indexOf(win), 1)
-      win = null
-    })
-  },
-
-  closeAllWindows: () => {
-    vars.activeNotifications.forEach((win) => {
-      win.close()
-    })
   }
 };
 
