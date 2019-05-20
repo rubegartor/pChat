@@ -1,4 +1,12 @@
 module.exports = () => {
+  vars.socket.on('loginRequestResponse', (response) => {
+    console.log(response)
+    if(response.status == 'ok'){
+      vars.socket.emit('getChannels')
+      $('#loginBg').remove()
+    }
+  })
+
   vars.socket.on('setChannels', (channels) => { 
    channels = channels.sort((a,b) => (a.name < b.name) ? 1 : ((b.name < a.name) ? -1 : 0)) //Se ordenan los objetos en orden alfabetico segun el nombre del canal
     channels.forEach(channel => {

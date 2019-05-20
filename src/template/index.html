@@ -7,6 +7,24 @@
   <script src='../app.js' type="text/javascript"></script>
 </head>
 <body>
+  <div class="loginBg" id="loginBg">
+    <div class="loginSidebar">
+      <button class="collapsible">Configuración de Red</button>
+      <div class="content">
+        <input type="text" placeholder="Host"/>
+        <input type="text" placeholder="Puerto"/>
+        <button type="button" class="button">Guardar</button>
+      </div>
+    </div>
+    <div class="loginPanel">
+      <div class="form">
+        <div class="loginTitle">pChat Login</div>
+        <input type="text" placeholder="Usuario" id="loginUsernameInput"/>
+        <input type="password" placeholder="Contraseña" id="loginPasswordInput"/>
+        <button type="button" id="submitLogin">Entrar</button>
+      </div>
+    </div>
+  </div>
   <div class="contextmenu" id="contextmenu">
     <ul class="menu-options"></ul>
   </div>
@@ -45,7 +63,7 @@
      
     </div>
     <div class="chat-bottom">
-      <input type="text" class="mainInput" placeholder="Enviar mensaje" id="mainInput"/>
+      <input type="text" class="mainInput" placeholder="Enviar mensaje" id="mainInput" style="display: none;"/>
     </div>
   </div>
 </body>

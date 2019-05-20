@@ -1,11 +1,13 @@
 const $ = require('jquery')
 const io = require('socket.io-client')
 const electron = require('electron')
+const bcrypt = require('bcryptjs')
 const remote = electron.remote
 const vars = require('../inc/vars')
 const funcs = require('../inc/general')
 const Message = require('../inc/message')
 const Channel = require('../inc/channel')
+const User = require('../inc/user')
 
 let contextMenuVisible = false
 var username = 'rubegartor'
@@ -85,7 +87,7 @@ $(document).ready(function(){
     if(e.which == 13){
       if($(this).val().trim() != ''){
         var datetime = new Date()
-        var time = ('0' + datetime.getHours()).slice(-2) + ":" + ('0' + datetime.getMinutes()).slice(-2)
+        var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
         var message = new Message(funcs.sha1((datetime.getTime() + vars.socket.id).toString()), vars.socket.id, username, time, vars.activeChannel, $(this).val().trim())
         message.send()
       }
@@ -95,5 +97,22 @@ $(document).ready(function(){
   
   $(window).on('click', () => {
     if(contextMenuVisible) funcs.toggleMenu($('.contextmenu'), 'hide')
+  })
+
+  $('.collapsible').on('click', function(){
+    $('.collapsible').removeClass('collapsible-active')
+    if($(this).next().css('maxHeight') != '0px'){
+      $(this).next().css('maxHeight', '0px')
+    }else{
+      $(this).addClass('collapsible-active')
+      $(this).next().css('maxHeight', $(this).next().prop('scrollHeight') + 'px')
+    }
+  })
+
+  $('#submitLogin').on('click', () => {
+    var username = $('#loginUsernameInput').val().trim()
+    var pwd = $('#loginPasswordInput').val().trim()
+    var user = new User(null, username, pwd)
+    user.login()
   })
 })

@@ -1,5 +1,6 @@
 module.exports = {
   socket: null,
   activeChannel: "",
-  activeNotification: null
+  activeNotification: null,
+  me: null
 }

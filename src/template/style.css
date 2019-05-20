@@ -1,15 +1,21 @@
-/*
-body: #363c42
-sidebar: #212529
-text-color: #dce0eb
-normal-link: #3498db
-hover-link: #2980b9
-message-bg: #40484f
-gray: #6A6C75
-red: #E74C3C
-yellow: #F1C40F
-green: #2ECC71
-*/
+:root {
+  --body: #363c42;
+  --sidebar: #212529;
+  --text-color: #dce0eb;
+  --message-bg: #40484f;
+  --gray: #6A6C75;
+  --redControl: #E74C3C;
+  --yellowControl: #F1C40F;
+  --greenControl: #2ECC71;
+  --blue: #3498db;
+  --blue-hover: #2980b9;
+  --green: #1abc9c;
+  --green-hover: #16a085;
+  --scroll: #2a3035;
+  --scrollbar: #434b53;
+  --separator: #2a2f34;
+  --input: #40484F;
+}
 
 *{
   margin: 0;
@@ -20,13 +26,13 @@ green: #2ECC71
 body{
   font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
   font-size: 1rem;
-  background-color: #363c42;
-  color: #dce0eb;
+  background-color: var(--body);
+  color: var(--text-color);
   overflow: hidden;
 }
 
 a{
-  color: #3498db;
+  color: var(--blue);
   outline: 0;
 }
 
@@ -35,7 +41,7 @@ a:hover{
 }
 
 a:active{
-  color: #2980b9;
+  color: var(--blue-hover);
 }
 
 ::-webkit-scrollbar {
@@ -43,12 +49,12 @@ a:active{
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #434b53;
+  background-color: var(--scrollbar);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #2a3035;
+  background-color: var(--scroll);
   border-radius: 10px;
 }
 
@@ -57,6 +63,7 @@ a:active{
   display: inline-block;
   padding: 10px;
   margin-bottom: 5px;
+  z-index: 1000;
 }
 
 .control-box img{
@@ -65,7 +72,7 @@ a:active{
 
 .control-box .close{
   display: inline-block;
-  background-color: #6A6C75;
+  background-color: var(--gray);
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -74,12 +81,12 @@ a:active{
 }
 
 .control-box .close:hover{
-  background-color: #E74C3C;
+  background-color: var(--redControl);
 }
 
 .control-box .max{
   display: inline-block;
-  background-color: #6A6C75;
+  background-color: var(--gray);
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -88,12 +95,12 @@ a:active{
 }
 
 .control-box .max:hover{
-  background-color: #F1C40F;
+  background-color: var(--yellowControl);
 }
 
 .control-box .min{
   display: inline-block;
-  background-color: #6A6C75;
+  background-color: var(--gray);
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -102,11 +109,11 @@ a:active{
 }
 
 .control-box .min:hover{
-  background-color: #2ECC71;
+  background-color: var(--greenControl);
 }
 
 .sidebar{
-  background-color: #212529;
+  background-color: var(--sidebar);
   width: 250px;
   height: 100vh;
   display: inline-block;
@@ -125,7 +132,7 @@ a:active{
 }
 
 .separator-sidebar{
-  background-color: #2a2f34;
+  background-color: var(--separator);
   width: calc(100% - 30px);
   height: 2px;
   margin: 5px 15px 7px 15px;
@@ -170,12 +177,12 @@ a:active{
 }
 
 .sidebar-channel li:hover{
-  background-color: #363c42;
+  background-color: var(--body);
 }
 
 .sidebar-channel .active-channel{
-  background-color: #363c42;
-  border-left: 4px solid #6A6C75;
+  background-color: var(--body);
+  border-left: 4px solid var(--gray);
   padding-left: 11px;
 }
 
@@ -189,7 +196,6 @@ a:active{
   height: auto;
   margin-left: 10px; 
   margin-right: 10px;
-  /* margin-top: 2px; */
   padding: 5px 15px 7px 15px;
   border-radius: 5px;
   cursor: pointer;
@@ -199,7 +205,7 @@ a:active{
 }
 
 .sidebar-users li:hover{
-  background-color: #363c42;
+  background-color: var(--body);
 }
 
 .sidebar-users li .status{
@@ -212,19 +218,19 @@ a:active{
 }
 
 .sidebar-users li .green{
-  background-color: #2ECC71;
+  background-color: var(--greenControl);
 }
 
 .sidebar-users li .red{
-  background-color: #E74C3C;
+  background-color: var(--redControl);
 }
 
 .sidebar-users li .yellow{
-  background-color: #F1C40F;
+  background-color: var(--yellowControl);
 }
 
 .sidebar-users li .gray{
-  background-color: #6A6C75;
+  background-color: var(--gray);
 }
 
 .chat-container{
@@ -247,7 +253,7 @@ a:active{
 
 .control-images{
   position: absolute;
-  background-color:#363c42;
+  background-color:var(--body);
   top: 11px;
   right: 20px;
   padding-left: 15px;
@@ -280,7 +286,7 @@ a:active{
 }
 
 .message{
-  background-color: #40484f;
+  background-color: var(--message-bg);
   width: auto;
   height: auto;
   margin: 10px;
@@ -316,7 +322,7 @@ a:active{
 }
 
 .mainInput{
-  background-color: #40484F;
+  background-color: var(--input);
   width: calc(100% - 24px);
   height: 35px;
   outline: 0;
@@ -324,7 +330,7 @@ a:active{
   border-radius: 5px;
   padding: 0px 12px;
   font-size: 0.95rem;
-  color: #dce0eb;
+  color: var(--text-color);
 }
 
 .mainInput::placeholder{
@@ -338,12 +344,11 @@ a:active{
   border: 0;
   text-align: left;
   height: 1.5em;
-  opacity: 0.6;
 }
 
 .hr-text:before {
   content: "";
-  background-color: #1e2225;
+  background-color: rgb(30, 34, 37, 0.45);
   position: absolute;
   left: 0;
   top: 50%;
@@ -352,7 +357,8 @@ a:active{
 }
 
 .hr-text:after {
-  background-color: #343A40;
+  background-color: var(--body);
+  color: rgb(220, 224, 235, 0.6);
   content: attr(data-content);
   position: relative;
   display: inline-block;
@@ -382,7 +388,7 @@ a:active{
 }
 
 .channelInput{
-  background-color: #40484F;
+  background-color: var(--input);
   width: calc(100% - 54px);
   height: 35px;
   outline: 0;
@@ -391,7 +397,7 @@ a:active{
   padding: 0px 12px;
   margin: 2px 15px;
   font-size: 0.95rem;
-  color: #dce0eb;
+  color: var(--text-color);
 }
 
 .channelInput::placeholder{
@@ -435,19 +441,19 @@ a:active{
 }
 
 .mainNotif .notifLeft .green{
-  background-color: #2ECC71;
+  background-color: var(--greenControl);
 }
 
 .mainNotif .notifLeft .gray{
-  background-color: #6A6C75;
+  background-color: var(--gray);
 }
 
 .mainNotif .notifLeft .red{
-  background-color: #E74C3C;
+  background-color: var(--redControl);
 }
 
 .mainNotif .notifLeft .yellow{
-  background-color: #F1C40F;
+  background-color: var(--yellowControl);
 }
 
 .mainNotif .notifRight{
@@ -461,17 +467,167 @@ a:active{
 }
 
 .mainNotif .notifRight .green{
-  color: #2ECC71;
+  color: var(--greenControl);
 }
 
 .mainNotif .notifRight .gray{
-  color: #6A6C75;
+  color: var(--gray);
 }
 
 .mainNotif .notifRight .red{
-  color: #E74C3C;
+  color: var(--redControl);
 }
 
 .mainNotif .notifRight .yellow{
-  color: #F1C40F;
+  color: var(--yellowControl);
+}
+
+.loginBg{
+  position: absolute;
+  top: 40px;
+  width: 100%;
+  height: 100vh;
+}
+
+.loginBg .loginSidebar{
+  background-color: var(--sidebar);
+  width: 250px;
+  height: 100vh;
+  display: inline-block;
+}
+
+.loginBg .loginSidebar .category{
+  margin-left: 15px;
+}
+
+.loginBg .loginSidebar input{
+  background-color: var(--input);
+  width: calc(100% - 30px);
+  height: 35px;
+  outline: 0;
+  border: 0;
+  border-radius: 5px;
+  padding: 0px 15px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  margin: 10px 10px 0px 0px;
+}
+
+.loginBg .loginSidebar input::placeholder{
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.loginBg .loginSidebar .button{
+  float: right;
+  background-color: var(--green);
+  font-size: 0.95em;
+  border: 0px;
+  border-radius: 5px;
+  height: 35px;
+  padding: 0px 12px;
+  margin-top: 10px;
+  width: auto;
+  color: var(--text-color);
+  outline: 0;
+  cursor: pointer;
+}
+
+.loginBg .loginSidebar .button:hover{
+  background-color: var(--green-hover);
+}
+
+.loginBg .loginSidebar .button:active{
+  opacity: .8;
+}
+
+.loginBg .loginPanel{
+  width: calc(100% - 250px);  
+  height: 100vh;
+  float: right;
+}
+
+.form{
+  position: relative;
+  width: calc((100% - 250px) * 0.3);
+  min-width: 250px;
+  margin: 0 auto;
+  top: calc((100vh / 2) - 157px);
+}
+
+.form input{
+  background-color: var(--input);
+  width: calc(100% - 30px);
+  height: 35px;
+  outline: 0;
+  border: 0;
+  border-radius: 5px;
+  padding: 0px 15px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+.form input::placeholder{
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form button{
+  background-color: var(--blue);
+  font-size: 0.95em;
+  border: 0px;
+  border-radius: 5px;
+  height: 35px;
+  padding: 0px 10px;
+  width: 100%;
+  color: var(--text-color);
+  outline: 0;
+  cursor: pointer;
+}
+
+.form button:hover{
+  background-color: var(--blue-hover);
+}
+
+.form button:active{
+  opacity: .8;
+}
+
+.form .loginTitle{
+  font-size: 1.3em;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.collapsible {
+  background-color: transparent;
+  cursor: pointer;
+  padding: 12px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  font-size: 1em;
+  outline: none;
+  color: var(--text-color);
+}
+
+.collapsible:hover, .collapsible-active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.collapsible:after {
+  content: '\002B';
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.collapsible-active:after {
+  content: "\2212";
+}
+
+.content {
+  padding: 0 18px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
 }

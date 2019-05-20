@@ -6,6 +6,8 @@ const server = require('https').createServer({
 })
 const io = require('socket.io')(server)
 const mongoose = require('mongoose')
+const bcrypt = require('bcryptjs')
+const crypto = require('crypto')
 
 mongoose.connect(config.dbURL, {useNewUrlParser: true})
 mongoose.Promise = global.Promise
@@ -35,14 +37,44 @@ let messagesSchema = mongoose.Schema({
   state: Object
 })
 
+let usersSchema = mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId,
+  user_id: String, 
+  username: String,
+  password: String,
+  status: String,
+  sessionHash: String
+})
+
 let Channel = mongoose.model('Channels', channelSchema)
 let Message = mongoose.model('Messages', messagesSchema)
+let User = mongoose.model('Users', usersSchema)
 
 io.on('connection', (client) => {
   console.log('User connected (' + client.id + ')')
 
-  Channel.find().populate('messages').exec((err, item) => {
-    io.to(client.id).emit('setChannels', item)
+  client.on('loginRequest', (creds) => {
+    User.findOne({username: creds.username}).exec((err, user) => {
+      if(user != null){
+        bcrypt.compare(creds.password, user.password).then((res) => {
+          if(res){
+            var sessionHash = crypto.createHash('sha1').update(Math.random().toString(36), 'binary').digest('hex')
+            User.updateOne({username: creds.username}, {$set: {'sessionHash': sessionHash}}).exec()
+            io.to(client.id).emit('loginRequestResponse', {'status': 'ok', 'sessionHash': sessionHash})
+          }else{
+            io.to(client.id).emit('loginRequestResponse', {'status': 'err', message: 'La contrasseña no es correcta'})
+          }
+        })
+      }else{
+        io.to(client.id).emit('loginRequestResponse', {'status': 'err', message: 'El usuario no existe'})
+      }
+    })
+  })
+
+  client.on('getChannels', () => {
+    Channel.find().populate('messages').exec((err, item) => {
+      io.to(client.id).emit('setChannels', item)
+    })
   })
 
   client.on('message', (message) => {
