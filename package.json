@@ -18,6 +18,7 @@
     "electron-builder": "^20.40.2"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "electron-windows-badge": "^1.0.5",
     "jquery": "^3.4.1",
     "socket.io": "^2.2.0",
