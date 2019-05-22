@@ -31,7 +31,6 @@ module.exports = () => {
   })
 
   vars.socket.on('messageResponse', (msg) => {
-    console.log(msg.time)
     var datetime = new Date(msg.time)
     var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
     var message = new Message(msg.id, msg.user_id, msg.username, time, msg.channel, msg.content)

@@ -1,7 +1,5 @@
 const $ = require('jquery')
-const io = require('socket.io-client')
 const electron = require('electron')
-const bcrypt = require('bcryptjs')
 const remote = electron.remote
 const vars = require('../inc/vars')
 const funcs = require('../inc/general')
@@ -75,8 +73,6 @@ $(document).ready(function(){
   $('#mainInput').on('keypress', function(e){
     if(e.which == 13){
       if($(this).val().trim() != ''){
-        var datetime = new Date()
-        //var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
         var time = +new Date
         var message = new Message(funcs.sha1((datetime.getTime() + vars.socket.id).toString()), vars.socket.id, 'rubegartor', time, funcs.getActiveChannel(), $(this).val().trim())
         message.send()

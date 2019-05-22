@@ -1,4 +1,16 @@
+const { clipboard } = require('electron')
+
 module.exports = {
+  separator: () => {},
+
+  copyMessage: (clickedElement) => {
+    if(window.getSelection().toString() != ''){
+      clipboard.writeText(window.getSelection().toString())
+    }else{
+      clipboard.writeText(clickedElement.text())
+    }
+  },
+
   editMessage: (clickedElement) => {
     console.log('edit Message')
   },
@@ -11,8 +23,7 @@ module.exports = {
     var username = message.parent().prev().find('span.message-username').text()
     var time = message.parent().prev().find('span.message-time').text()
   
-    var messageObj = new Message(id, user_id, username, time, vars.activeChannel, content)
-    messageObj.remove()
+    new Message(id, user_id, username, time, vars.activeChannel, content).remove()
   },
 
   editChannel: (clickedElement) => {
@@ -20,7 +31,6 @@ module.exports = {
   },
 
   removeChannel: (clickedElement) => {
-    var channel = new Channel(clickedElement.text())
-    channel.remove()
+    new Channel(clickedElement.text()).remove()
   }
 }

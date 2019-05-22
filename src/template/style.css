@@ -383,6 +383,13 @@ a:active{
   cursor: pointer;
 }
 
+.contextmenu .menu-options .menu-separator {
+  width: 92%;
+  height: 1px;
+  margin: 0px 4%;
+  background-color: var(--sidebar);
+}
+
 .contextmenu .menu-options .menu-option:hover {
   background-color: rgba(0, 0, 0, 0.2);
 }

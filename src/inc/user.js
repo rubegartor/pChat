@@ -1,3 +1,4 @@
+const io = require('socket.io-client')
 const vars = require('./vars')
 
 module.exports = class User{

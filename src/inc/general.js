@@ -55,6 +55,8 @@ module.exports = {
 
   createContextMenus: function() {
     var messageContextMenuOptions = [
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-copyMsgBtn').text('Copiar'),
+      $('<li>').addClass('menu-separator'),
       $('<li>').addClass('menu-option').attr('id', 'contextmenu-editMsgBtn').text('Editar mensaje'),
       $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeMsgBtn').text('Eliminar mensaje')
     ]
@@ -64,7 +66,7 @@ module.exports = {
       $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeChannelBtn').text('Eliminar canal')
     ]
   
-    var messageContextMenuFuncs = [contextFuncs.editMessage, contextFuncs.removeMessage]
+    var messageContextMenuFuncs = [contextFuncs.copyMessage, contextFuncs.separator, contextFuncs.editMessage, contextFuncs.removeMessage]
     var channelContextMenuFuncs = [contextFuncs.editChannel, contextFuncs.removeChannel]
   
     this.addContextMenu($('#chat-messages'), '.message-line', messageContextMenuOptions, messageContextMenuFuncs)
