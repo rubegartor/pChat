@@ -10,17 +10,6 @@ const Channel = require('../inc/channel')
 const User = require('../inc/user')
 
 let contextMenuVisible = false
-var username = 'rubegartor'
-
-const socketOptions = {
-  secure: true,
-  reconnect: true,
-  rejectUnauthorized : false //INFO: Si el certificado es self-signed necesitas utilizar rejectUnauthorized = false, por lo tanto se queda expuesto a un posible ataque MiTM
-}
-
-vars.socket = io.connect('https://localhost:1234', socketOptions)
-
-require('../inc/io-listener')()
 
 $(document).ready(function(){
   funcs.createContextMenus()
@@ -52,8 +41,8 @@ $(document).ready(function(){
     $('#chnl-panel > li').removeClass('active-channel')
     $('#mainInput').prop('disabled', false)
     $(this).addClass('active-channel')
-    vars.activeChannel = $(this).text()
     $('#chnl-hr').attr('data-content', $(this).text())
+    new Channel($(this).text()).join()
     funcs.loadChannelMessages()
   })
 
@@ -87,8 +76,9 @@ $(document).ready(function(){
     if(e.which == 13){
       if($(this).val().trim() != ''){
         var datetime = new Date()
-        var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
-        var message = new Message(funcs.sha1((datetime.getTime() + vars.socket.id).toString()), vars.socket.id, username, time, vars.activeChannel, $(this).val().trim())
+        //var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
+        var time = +new Date
+        var message = new Message(funcs.sha1((datetime.getTime() + vars.socket.id).toString()), vars.socket.id, 'rubegartor', time, funcs.getActiveChannel(), $(this).val().trim())
         message.send()
       }
       $(this).val('')

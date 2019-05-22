@@ -9,6 +9,15 @@ module.exports = class User{
   }
 
   login(){
+    const socketOptions = {
+      secure: true,
+      reconnect: true,
+      rejectUnauthorized : false //INFO: Si el certificado es self-signed necesitas utilizar rejectUnauthorized = false, por lo tanto se queda expuesto a un posible ataque MiTM
+    }
+
+    vars.socket = io.connect('https://localhost:1234', socketOptions)
+    require('../inc/io-listener')()
+
     vars.socket.emit('loginRequest', this)
   }
 

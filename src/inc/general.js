@@ -71,27 +71,29 @@ module.exports = {
     this.addContextMenu($('#chnl-panel'), 'li', channelContextMenuOptions, channelContextMenuFuncs)
   },
 
-  loadChannelMessages: () => {
+  loadChannelMessages: function() {
     $('#chat-messages').html('')
-    vars.socket.emit('getChannelMessages', vars.activeChannel)
+    vars.socket.emit('getChannelMessages', this.getActiveChannel())
   },
 
   scroll: () => {
-    $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight - $('#chat-messages')[0].clientHeight);
+    $('#chat-messages').scrollTop($('#chat-messages').prop('scrollHeight') - $('#chat-messages').prop('clientHeight'))
   },
 
-  selectFirstChannel: () => {
+  getActiveChannel: () => {
+    return $('#chnl-panel > li.active-channel').text()
+  },
+
+  selectFirstChannel: function() {
     if($('#chnl-panel > li').length > 0){
-      if($('#chnl-panel > li:first').text() != vars.activeChannel){
+      if($('#chnl-panel > li:first').text() != this.getActiveChannel()){
         $('#chnl-panel > li:first').click()
         $('#mainInput').prop('disabled', false)
         $('#chnl-hr').attr('data-content', $('#chnl-panel > li:first').text())
-        vars.activeChannel = $('#chnl-panel > li:first').text()
       }
     }else{
       $('#mainInput').prop('disabled', true)
       $('#chnl-hr').attr('data-content', "")
-      vars.activeChannel = ""
     }
   },
 

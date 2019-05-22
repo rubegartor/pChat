@@ -32,7 +32,7 @@ let messagesSchema = mongoose.Schema({
   user_id: String,
   username: String,
   content: String,
-  time: String,
+  time: Number,
   channel: String,
   state: Object
 })
@@ -77,6 +77,21 @@ io.on('connection', (client) => {
     })
   })
 
+  client.on('joinChannel', (channel) => {
+    Object.keys(client.rooms).forEach((el) => {
+      if(el != client.id){
+        client.leave(el)
+      }
+    })
+    client.join(channel.name)
+  })
+
+  client.on('getChannelMessages', (channel) => {
+    Channel.findOne({name: channel}).populate('messages').exec((err, item) => {
+      io.to(client.id).emit('getChannelMessagesResponse', item)
+    })
+  })
+
   client.on('message', (message) => {
     var msg = new Message({
       _id: new mongoose.mongo.ObjectId(),
@@ -95,13 +110,7 @@ io.on('connection', (client) => {
 
     Channel.updateOne({name: message.channel}, {$push: {messages: msg._id}}).exec()
 
-    io.emit('messageResponse', message)
-  })
-
-  client.on('getChannelMessages', (channel) => {
-    Channel.findOne({name: channel}).populate('messages').exec((err, item) => {
-      io.to(client.id).emit('getChannelMessagesResponse', item)
-    })
+    io.in(message.channel).emit('messageResponse', message)
   })
 
   client.on('removeMessage', (message) => {

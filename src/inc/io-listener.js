@@ -1,9 +1,12 @@
 module.exports = () => {
   vars.socket.on('loginRequestResponse', (response) => {
-    console.log(response)
     if(response.status == 'ok'){
+      vars.socket.emit('updateSocketId')
       vars.socket.emit('getChannels')
+      $('#mainInput').css('display', 'block')
       $('#loginBg').remove()
+    }else{
+      vars.socket.disconnect()
     }
   })
 
@@ -27,18 +30,19 @@ module.exports = () => {
     }
   })
 
-  vars.socket.on('messageResponse', (resp) => {
-    var message = new Message(resp.id, resp.user_id, resp.username, resp.time, resp.channel, resp.content)
+  vars.socket.on('messageResponse', (msg) => {
+    console.log(msg.time)
+    var datetime = new Date(msg.time)
+    var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
+    var message = new Message(msg.id, msg.user_id, msg.username, time, msg.channel, msg.content)
 
-    if(message.channel == vars.activeChannel){
-      if($('#chat-messages > div').length == 0){
-        $('#chat-messages').append(message.toHTML())
+    if($('#chat-messages > div').length == 0){
+      $('#chat-messages').append(message.toHTML())
+    }else{
+      if($('#chat-messages > div:last > div:last > span').attr('user_id') == message.user_id){
+        $('#chat-messages > div:last > div:last').append(message.toAppend())
       }else{
-        if($('#chat-messages > div:last > div:last > span').attr('user_id') == message.user_id){
-          $('#chat-messages > div:last > div:last').append(message.toAppend())
-        }else{
-          $('#chat-messages').append(message.toHTML())
-        }
+        $('#chat-messages').append(message.toHTML())
       }
     }
 
@@ -47,7 +51,9 @@ module.exports = () => {
   
   vars.socket.on('getChannelMessagesResponse', (resp) => {
     resp.messages.forEach((msg) => {
-      var message = new Message(msg.id, msg.user_id, msg.username, msg.time, msg.channel, msg.content)
+      var datetime = new Date(msg.time)
+      var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
+      var message = new Message(msg.id, msg.user_id, msg.username, time, msg.channel, msg.content)
 
       if($('#chat-messages > div').length == 0){
         $('#chat-messages').append(message.toHTML())
@@ -81,7 +87,7 @@ module.exports = () => {
   vars.socket.on('removeChannelResponse', (channel) => {
     var chnElement = $('#chnl-panel > li:contains("' + channel.name + '")')
     chnElement.remove()
-    if($('#chnl-panel > li.active-channel').length == 0){
+    if(funcs.getActiveChannel().length == 0){
       $('#chat-messages').html('')
       funcs.selectFirstChannel()
     }
