@@ -972,7 +972,7 @@ $(document).ready(function() {
       }
     }
 
-    if($('input#msgSendTextBox').val() == ""){
+    if($('input#msgSendTextBox').val().trim().indexOf("@") != 0){
       $('#autocomplete-list').hide();
     }
 
