@@ -1,8 +1,6 @@
 const { clipboard } = require('electron')
 
 module.exports = {
-  separator: () => {},
-
   copyMessage: (clickedElement) => {
     if(window.getSelection().toString() != ''){
       clipboard.writeText(window.getSelection().toString())
@@ -32,5 +30,10 @@ module.exports = {
 
   removeChannel: (clickedElement) => {
     new Channel(clickedElement.text()).remove()
+  },
+
+  cancelCreateChannel: () => {
+    $('#createChannelBtn').css('display', 'block')
+    $('#chnl-panel > input').remove()
   }
 }

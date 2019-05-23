@@ -120,17 +120,23 @@ io.on('connection', (client) => {
   })
 
   client.on('createChannel', (channel) => {
-    var chn = new Channel({
-      _id: new mongoose.mongo.ObjectId(),
-      name: channel.name,
-      messages: []
+    Channel.findOne({name: channel.name}).exec((err, item) => {
+      if(item == null){
+        var chn = new Channel({
+          _id: new mongoose.mongo.ObjectId(),
+          name: channel.name,
+          messages: []
+        })
+    
+        chn.save((err) => {
+          if(err) return console.error(err)
+        })
+    
+        io.emit('createChannelResponse', {'status': 'ok', 'data': channel})
+      }else{
+        io.emit('createChannelResponse', {'status': 'err', 'msg': 'El canal ya existe'})
+      }
     })
-
-    chn.save((err) => {
-      if(err) return console.error(err)
-    })
-
-    io.emit('createChannelResponse', channel)
   })
 
   client.on('removeChannel', (channel) => {

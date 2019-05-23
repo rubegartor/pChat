@@ -21,12 +21,16 @@ module.exports = () => {
   })
 
   vars.socket.on('createChannelResponse', function(resp){
-    var channel = new Channel(resp.name)
-    var channelLength = $('#chnl-panel > li').length
-    $('#chnl-panel').append(channel.toHTML())
+    if(resp.status == 'ok'){
+      var channel = new Channel(resp.data.name)
+      var channelLength = $('#chnl-panel > li').length
+      $('#chnl-panel').append(channel.toHTML())
 
-    if(channelLength == 0){
-      funcs.selectFirstChannel()
+      if(channelLength == 0){
+        funcs.selectFirstChannel()
+      }
+    }else{
+      //El canal que intentas crear ya existe
     }
   })
 
@@ -84,8 +88,13 @@ module.exports = () => {
   })
 
   vars.socket.on('removeChannelResponse', (channel) => {
-    var chnElement = $('#chnl-panel > li:contains("' + channel.name + '")')
-    chnElement.remove()
+    $('#chnl-panel > li').each(function() {
+      if($(this).text() === channel.name){
+        $(this).remove()
+        return false
+      }
+    })
+
     if(funcs.getActiveChannel().length == 0){
       $('#chat-messages').html('')
       funcs.selectFirstChannel()

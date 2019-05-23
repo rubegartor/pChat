@@ -66,7 +66,7 @@ module.exports = {
       $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeChannelBtn').text('Eliminar canal')
     ]
   
-    var messageContextMenuFuncs = [contextFuncs.copyMessage, contextFuncs.separator, contextFuncs.editMessage, contextFuncs.removeMessage]
+    var messageContextMenuFuncs = [contextFuncs.copyMessage, null, contextFuncs.editMessage, contextFuncs.removeMessage]
     var channelContextMenuFuncs = [contextFuncs.editChannel, contextFuncs.removeChannel]
   
     this.addContextMenu($('#chat-messages'), '.message-line', messageContextMenuOptions, messageContextMenuFuncs)

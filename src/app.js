@@ -6,6 +6,7 @@ const funcs = require('../inc/general')
 const Message = require('../inc/message')
 const Channel = require('../inc/channel')
 const User = require('../inc/user')
+const contextFuncs = require('../inc/contextFuncs')
 
 let contextMenuVisible = false
 
@@ -57,14 +58,22 @@ $(document).ready(function(){
   })
 
   $('#createChannelBtn').on('click', () => {
+    $('#createChannelBtn').css('display', 'none')
     var input = $('<input>').addClass('channelInput').attr('placeholder', 'Nuevo canal...')
     $('#chnl-panel').append(input)
+    input.focus()
+
+    var channelContextMenuOptions = [$('<li>').addClass('menu-option').attr('id', 'contextmenu-cancelChannelBtn').text('Cancelar')]
+    var channelContextMenuFuncs = [contextFuncs.cancelCreateChannel]
+    funcs.addContextMenu($('#chnl-panel'), 'input', channelContextMenuOptions, channelContextMenuFuncs)
+
     input.on('keypress', (e) => {
       if(e.which == 13){
         var channelName = input.val().replace(new RegExp('#', 'g'), '').trim()
         if(channelName.length > 0){
           new Channel('#' + channelName).create()
           input.remove()
+          $('#createChannelBtn').css('display', 'block')
         }
       }
     })
