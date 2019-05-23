@@ -78,12 +78,16 @@ module.exports = {
     ]
 
     var mainInputContextMenuOptions = [
-      $('<li>').addClass('menu-option').attr('id', 'contextmenu-copyMainInputBtn').text('Copiar')
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-copyMainInputBtn').text('Copiar'),
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-pasteMainInputBtn').text('Pegar'),
+      $('<li>').addClass('menu-separator'),
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-clearMainInputBtn').text('Limpiar'),
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-selectAllMainInputBtn').text('Seleccionar todo'),
     ]
   
     var messageContextMenuFuncs = [contextFuncs.copyMessage, null, contextFuncs.editMessage, contextFuncs.removeMessage]
     var channelContextMenuFuncs = [contextFuncs.editChannel, contextFuncs.removeChannel]
-    var mainInputContextMenuFuncs = [contextFuncs.copyMainInput]
+    var mainInputContextMenuFuncs = [contextFuncs.copyMainInput, contextFuncs.pasteMainInput, null, contextFuncs.clearMainInput, contextFuncs.selectAllMainInput]
   
     this.addContextMenu($('#chat-messages'), '.message-line', messageContextMenuOptions, messageContextMenuFuncs)
     this.addContextMenu($('#chnl-panel'), 'li', channelContextMenuOptions, channelContextMenuFuncs)

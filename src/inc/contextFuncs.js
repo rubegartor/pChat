@@ -43,5 +43,17 @@ module.exports = {
     }else{
       clipboard.writeText(clickedElement.val())
     }
+  },
+
+  pasteMainInput: () => {
+    $('#mainInput').val($('#mainInput').val() + clipboard.readText())
+  },
+
+  clearMainInput: () => {
+    $('#mainInput').val('')
+  },
+
+  selectAllMainInput: () => {
+    $('#mainInput').select()
   }
 }

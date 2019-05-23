@@ -4,6 +4,8 @@ module.exports = () => {
       vars.socket.emit('updateSocketId')
       vars.socket.emit('getChannels')
       $('#mainInput').css('display', 'block')
+      $('#controlImages').css('display', 'block')
+      $('#chatTop').css('width', 'calc(100% - ' + ($('#controlImages').width() + $('#sidebar').width() + 30) + 'px)')
       $('#loginBg').remove()
     }else{
       vars.socket.disconnect()
