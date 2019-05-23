@@ -35,5 +35,13 @@ module.exports = {
   cancelCreateChannel: () => {
     $('#createChannelBtn').css('display', 'block')
     $('#chnl-panel > input').remove()
+  },
+
+  copyMainInput: (clickedElement) => {
+    if(window.getSelection().toString() != ''){
+      clipboard.writeText(window.getSelection().toString())
+    }else{
+      clipboard.writeText(clickedElement.val())
+    }
   }
 }

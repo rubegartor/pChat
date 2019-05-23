@@ -49,6 +49,17 @@ module.exports = {
   },
 
   setPosition: function(menu, pos) {
+    var windowWidth = remote.getCurrentWindow().getBounds().width
+    var windowHeight = remote.getCurrentWindow().getBounds().height
+
+    if((pos.top + menu.height()) > windowHeight){
+      pos.top = pos.top - menu.height()
+    }
+
+    if((pos.left + menu.width()) > windowWidth){
+      pos.left = pos.left - menu.width()
+    }
+
     menu.css({'left': pos.left + 'px', 'top': pos.top + 'px'})
     this.toggleMenu(menu, 'show')
   },
@@ -65,12 +76,18 @@ module.exports = {
       $('<li>').addClass('menu-option').attr('id', 'contextmenu-editChannelBtn').text('Editar canal'),
       $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeChannelBtn').text('Eliminar canal')
     ]
+
+    var mainInputContextMenuOptions = [
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-copyMainInputBtn').text('Copiar')
+    ]
   
     var messageContextMenuFuncs = [contextFuncs.copyMessage, null, contextFuncs.editMessage, contextFuncs.removeMessage]
     var channelContextMenuFuncs = [contextFuncs.editChannel, contextFuncs.removeChannel]
+    var mainInputContextMenuFuncs = [contextFuncs.copyMainInput]
   
     this.addContextMenu($('#chat-messages'), '.message-line', messageContextMenuOptions, messageContextMenuFuncs)
     this.addContextMenu($('#chnl-panel'), 'li', channelContextMenuOptions, channelContextMenuFuncs)
+    this.addContextMenu($('#chatBottom'), '#mainInput', mainInputContextMenuOptions, mainInputContextMenuFuncs)
   },
 
   loadChannelMessages: function() {
