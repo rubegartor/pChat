@@ -144,7 +144,6 @@ module.exports = {
     })
 
     win.loadFile('src/template/notif.html')
-    win.webContents.openDevTools()
 
     vars.activeNotification = win
     win.webContents.on('did-finish-load', () => {
@@ -153,6 +152,16 @@ module.exports = {
     })
 
     win.show()
+  },
+
+  addAlert: function(content, color){
+    var alert = $('<div>').text(content).addClass('alert ' + color);
+    $('#alertas').append(alert);
+    setTimeout(function(){
+      alert.fadeOut(1200, function(){
+        $(this).remove();
+      });
+    }, 2000);
   }
 };
 

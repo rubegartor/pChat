@@ -1,8 +1,5 @@
 const $ = require('jquery')
-const remote = require('electron').remote
 const {ipcRenderer} = require('electron')
-
-let window = remote.getCurrentWindow()
 
 ipcRenderer.on('notif', function (e, data) {
   $('#iconBg').addClass(data.color)

@@ -7,35 +7,29 @@
   <script src='../app.js' type="text/javascript"></script>
 </head>
 <body>
+  <div class="control-box">
+    <div class="close" id="close-btn"></div>
+    <div class="max" id="max-btn"></div>
+    <div class="min" id="min-btn"></div>
+  </div>
+  <div class="chat-top" id="chatTop">
+    <hr class="hr-text" id="chnl-hr" data-content=""/>
+  </div>
+  <div class="alert-bg" id="alertas"></div>
   <div class="loginBg" id="loginBg">
-    <div class="loginSidebar">
-      <button class="collapsible">Configuración de Red</button>
-      <div class="content">
-        <input type="text" placeholder="Host"/>
-        <input type="text" placeholder="Puerto"/>
-        <button type="button" class="button">Guardar</button>
-      </div>
-    </div>
-    <div class="loginPanel">
-      <div class="form">
-        <div class="loginTitle">pChat Login</div>
-        <input type="text" placeholder="Usuario" id="loginUsernameInput"/>
-        <input type="password" placeholder="Contraseña" id="loginPasswordInput"/>
-        <button type="button" id="submitLogin">Entrar</button>
-      </div>
+    <div class="form">
+      <div class="loginTitle">pChat Login</div>
+      <input type="text" placeholder="Usuario" id="loginUsernameInput" value="rubegartor"/>
+      <input type="password" placeholder="Contraseña" id="loginPasswordInput" value="rubegartor"/>
+      <button type="button" id="submitLogin">Entrar</button>
+      <span class="form-label">&raquo; Más opciones</span>
     </div>
   </div>
   <div class="contextmenu" id="contextmenu">
     <ul class="menu-options"></ul>
   </div>
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-panel1">
-      <div class="control-box">
-        <div class="close" id="close-btn"></div>
-        <div class="max" id="max-btn"></div>
-        <div class="min" id="min-btn"></div>
-      </div>
-    </div>
+  <div class="sidebar" id="sidebar" style="visibility: hidden;">
+    <div class="sidebar-panel1"></div>
     <div class="sidebar-panel2">
       <div class="sidebar-title">Canales de texto: <img src="file:///images/plus_20.png" id="createChannelBtn"/></div>
       <div class="separator-sidebar"></div>
@@ -51,9 +45,6 @@
     </div>
   </div>
   <div class="chat-container">
-    <div class="chat-top" id="chatTop">
-      <hr class="hr-text" id="chnl-hr" data-content=""/>
-    </div>
     <div class="control-images" id="controlImages" style="display: none;">
       <img src="file:///images/search_20.png"/>
       <img src="file:///images/pushpin_20.png"/>

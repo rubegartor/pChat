@@ -4,6 +4,7 @@ module.exports = () => {
       vars.socket.emit('updateSocketId')
       vars.socket.emit('getChannels')
       $('#mainInput').css('display', 'block')
+      $('#sidebar').css('visibility', 'visible')
       $('#controlImages').css('display', 'block')
       $('#chatTop').css('width', 'calc(100% - ' + ($('#controlImages').width() + $('#sidebar').width() + 30) + 'px)')
       $('#loginBg').remove()
@@ -32,7 +33,7 @@ module.exports = () => {
         funcs.selectFirstChannel()
       }
     }else{
-      //El canal que intentas crear ya existe
+      funcs.addAlert('El canal ya existe', 'alert-yellow')
     }
   })
 

@@ -94,16 +94,6 @@ $(document).ready(function(){
     if(contextMenuVisible) funcs.toggleMenu($('.contextmenu'), 'hide')
   })
 
-  $('.collapsible').on('click', function(){
-    $('.collapsible').removeClass('collapsible-active')
-    if($(this).next().css('maxHeight') != '0px'){
-      $(this).next().css('maxHeight', '0px')
-    }else{
-      $(this).addClass('collapsible-active')
-      $(this).next().css('maxHeight', $(this).next().prop('scrollHeight') + 'px')
-    }
-  })
-
   $('#submitLogin').on('click', () => {
     var username = $('#loginUsernameInput').val().trim()
     var pwd = $('#loginPasswordInput').val().trim()
