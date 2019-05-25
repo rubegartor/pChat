@@ -4,9 +4,11 @@ const vars = require('./vars')
 module.exports = class Channel{
   constructor(name){
     this.name = name
+    this.position = 0
   }
 
-  create(){
+  create(chnPos){
+    this.position = chnPos
     vars.socket.emit('createChannel', this)
   }
 

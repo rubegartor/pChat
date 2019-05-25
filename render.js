@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, globalShortcut, Menu, dialog, ipcMain } = require('electron')
+const { app, BrowserWindow, Tray, globalShortcut, Menu } = require('electron')
 const Badge = require('electron-windows-badge')
 const path = require('path')
 

@@ -21,8 +21,12 @@
       <div class="loginTitle">pChat Login</div>
       <input type="text" placeholder="Usuario" id="loginUsernameInput" value="rubegartor"/>
       <input type="password" placeholder="Contraseña" id="loginPasswordInput" value="rubegartor"/>
+      <div id="loginMoreOptionsGroup" style="display: none;">
+        <input type="text" placeholder="Host" id="hostLoginInput"/>
+        <input type="text" placeholder="Puerto" id="portLoginInput"/>
+      </div>
       <button type="button" id="submitLogin">Entrar</button>
-      <span class="form-label">&raquo; Más opciones</span>
+      <span class="form-label" id="loginMoreOptions">&raquo; Más opciones</span>
     </div>
   </div>
   <div class="contextmenu" id="contextmenu">
@@ -36,26 +40,28 @@
       <ul class="sidebar-channel" id="chnl-panel"></ul>
       <div class="sidebar-title sidebar-title-mt">Usuarios: <img src="file:///images/chevron_down_20.png" id="toggleUsersViewBtn"/></div>
       <div class="separator-sidebar"></div>
-      <ul class="sidebar-users" id="usrs-panel" style="display: none;">
-        <li><div class="status red"></div>rubegartor</li>
-        <li><div class="status yellow"></div>cesareo</li>
-        <li><div class="status green"></div>alesis</li>
-        <li><div class="status gray"></div>caraSonriente</li>
-      </ul>
+      <ul class="sidebar-users" id="usrs-panel"></ul>
     </div>
   </div>
   <div class="chat-container">
     <div class="control-images" id="controlImages" style="display: none;">
       <img src="file:///images/search_20.png"/>
       <img src="file:///images/pushpin_20.png"/>
-      <img src="file:///images/notif1_20.png"/>
+      <img src="file:///images/notif1_20.png" id="notifBtn"/>
+      <img src="file:///images/cog_20.png" id="cogBtn"/>
     </div>
     <div class="chat-messages" id="chat-messages">
      
     </div>
     <div class="chat-bottom" id="chatBottom">
-      <input type="text" class="mainInput" placeholder="Enviar mensaje" id="mainInput" style="display: none;"/>
+      <input type="text" class="mainInput" placeholder="Enviar mensaje" id="mainInput"/>
     </div>
+  </div>
+  <div class="configPanel" id="configPanel">
+    <label class="switch">
+      <input type="checkbox">
+      <span class="slider round"></span>
+    </label>
   </div>
 </body>
 </html>

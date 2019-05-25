@@ -47,6 +47,7 @@ module.exports = {
 
   pasteMainInput: () => {
     $('#mainInput').val($('#mainInput').val() + clipboard.readText())
+    $('#mainInput').focus()
   },
 
   clearMainInput: () => {

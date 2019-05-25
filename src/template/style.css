@@ -15,6 +15,7 @@
   --scrollbar: #434b53;
   --separator: #2a2f34;
   --input: #40484F;
+  --switch: #e67e22;
 }
 
 *{
@@ -116,7 +117,6 @@ a:active{
   width: 250px;
   height: 100vh;
   display: inline-block;
-  box-shadow: 0px 0px 20px -8px rgba(0,0,0,0.53);
 }
 
 .sidebar-panel1{
@@ -185,6 +185,11 @@ a:active{
   padding-left: 11px;
 }
 
+.sidebar-channel .channel-placeholder{
+  background-color: var(--separator);
+  line-height: 0.1em;
+}
+
 .sidebar-users{
   width: 100%;
   height: auto;
@@ -233,9 +238,8 @@ a:active{
 }
 
 .chat-container{
-  position: absolute;
   float: right;
-  width: calc(100% - 10px);
+  width: calc(100% - 270px);
   height: calc(100vh - 20px);
   padding: 10px;
 }
@@ -257,7 +261,6 @@ a:active{
   background-color:var(--body);
   top: 11px;
   right: 20px;
-  padding-left: 15px;
 }
 
 .control-images img{
@@ -365,6 +368,10 @@ a:active{
   display: inline-block;
   padding: 0 0.8em;
   line-height: 1.5em;
+}
+
+.hr-text-config:after {
+  content: 'Configuración';
 }
 
 .contextmenu {
@@ -491,7 +498,8 @@ a:active{
 }
 
 .loginBg{
-  position: absolute;
+  position: relative;
+  background-color: var(--body);
   top: 40px;
   width: 100%;
   height: 100vh;
@@ -499,22 +507,18 @@ a:active{
 
 .form{
   overflow: hidden;
-  background-color: var(--sidebar);
+  position: relative;
+  top: 40%;
+  background-color: var(--separator);
   padding: 40px 30px 12px 30px;
   border-radius: 10px;
-  position: absolute;
-  top: calc(50% - 176px);
-  left: calc(50% - 230px);
   width: 400px;
-  -webkit-transform: translate(-50%, -50%);
-  -moz-transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  -o-transform: translate(-50%, -50%);
+  position: absolute;
+  top: 45%;
+  left: 50%;
   transform: translate(-50%, -50%);
   -webkit-font-smoothing: subpixel-antialiased;
-  -webkit-transform: translateZ(0) scale(1.0, 1.0);
-  -webkit-transition: -webkit-transform 300ms, box-shadow 300ms;
-  -moz-transition: -moz-transform 300ms, box-shadow 300ms;
+  -webkit-transform: translateZ(50%) scale(1.0, 1.0);
   transition: transform 300ms, box-shadow 300ms;
   box-shadow: 0px 0px 20px -8px rgba(0,0,0,0.53);
 }
@@ -534,7 +538,7 @@ a:active{
 .form::before {
   left: 40%;
   bottom: -130%;
-  background-color: rgba(69, 105, 144, 0.9);
+  background-color: rgba(54,60,66, 0.9);
   -webkit-animation: wawes 6s infinite linear;
   -moz-animation: wawes 6s infinite linear;
   animation: wawes 6s infinite linear;
@@ -543,7 +547,7 @@ a:active{
 .form::after {
   left: 35%;
   bottom: -125%;
-  background-color: rgba(2, 128, 144, 0.5);
+  background-color: rgba(64,72,79, 0.5);
   -webkit-animation: wawes 7s infinite;
   -moz-animation: wawes 7s infinite;
   animation: wawes 7s infinite;
@@ -700,4 +704,78 @@ a:active{
 
 .alert-yellow:hover{
   background-color: rgba(241, 196, 15, 0.8);
+}
+
+.configPanel{
+  display: none;
+  position: absolute;
+  top: 40px;
+  left: 250px;
+  background-color: var(--body);
+  width: calc(100% - 280px);
+  height: calc(100vh - 70px);
+  padding: 15px;
+}
+
+.switch {
+  position: absolute;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  margin-top: -2px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #FFFFFF;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: var(--switch);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--switch);
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(20px);
+  -ms-transform: translateX(20px);
+  transform: translateX(20px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }

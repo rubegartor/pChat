@@ -6,17 +6,22 @@ module.exports = class User{
     this.user_id = user_id
     this.username = username
     this.password = password
-    this.status = 'offline'
+    this.status = {'status': null, 'actualSession': null, 'lastLogin': null}
   }
 
-  login(){
+  login(options){
+    var url = 'https://localhost:1234'
     const socketOptions = {
       secure: true,
       reconnect: true,
       rejectUnauthorized : false //INFO: Si el certificado es self-signed necesitas utilizar rejectUnauthorized = false, por lo tanto se queda expuesto a un posible ataque MiTM
     }
 
-    vars.socket = io.connect('https://localhost:1234', socketOptions)
+    if(Object.keys(options).length > 0){
+      url = 'https://' + options.host + ':' + options.port
+    }
+
+    vars.socket = io.connect(url, socketOptions)
     require('../inc/io-listener')()
 
     vars.socket.emit('loginRequest', this)

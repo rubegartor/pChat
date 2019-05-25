@@ -1,26 +1,49 @@
 module.exports = () => {
+  vars.socket.on('disconnect', () => {
+    console.log('disconnected from server')
+  })
+
   vars.socket.on('loginRequestResponse', (response) => {
     if(response.status == 'ok'){
-      vars.socket.emit('updateSocketId')
       vars.socket.emit('getChannels')
+      vars.socket.emit('getUsersOnline')
+
       $('#mainInput').css('display', 'block')
       $('#sidebar').css('visibility', 'visible')
       $('#controlImages').css('display', 'block')
-      $('#chatTop').css('width', 'calc(100% - ' + ($('#controlImages').width() + $('#sidebar').width() + 30) + 'px)')
-      $('#loginBg').remove()
+      $('#chatTop').css('width', 'calc(100% - ' + ($('#controlImages').width() + $('#sidebar').width() + 40) + 'px)')
+      $('#chatTop').css('left', '260px')
+      $('#loginBg').css('display', 'none')
     }else{
       vars.socket.disconnect()
     }
   })
 
-  vars.socket.on('setChannels', (channels) => { 
-   channels = channels.sort((a,b) => (a.name < b.name) ? 1 : ((b.name < a.name) ? -1 : 0)) //Se ordenan los objetos en orden alfabetico segun el nombre del canal
+  vars.socket.on('setChannels', (channels) => {
+    $('#chnl-panel').html('')
+   channels = channels.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0)) //Se ordenan los objetos segun su posicion
     channels.forEach(channel => {
       var chn = new Channel(channel.name)
       $('#chnl-panel').append(chn.toHTML())
     })
 
     funcs.selectFirstChannel()
+  })
+
+  vars.socket.on('updateChannels', (channels) => {
+    var activeChn = $('#chnl-panel > li.active-channel').text()
+    $('#chnl-panel').html('')
+    channels = channels.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0)) //Se ordenan los objetos segun su posicion
+      channels.forEach(channel => {
+        var chn = new Channel(channel.name)
+        $('#chnl-panel').append(chn.toHTML())
+    })
+
+    $('#chnl-panel > li').each(function() {
+      if($(this).text() == activeChn){
+        $(this).addClass('active-channel')
+      }
+    })
   })
 
   vars.socket.on('createChannelResponse', function(resp){
@@ -102,5 +125,25 @@ module.exports = () => {
       $('#chat-messages').html('')
       funcs.selectFirstChannel()
     }
+  })
+
+  vars.socket.on('getUsersOnlineResponse', (users) => {
+    users.forEach((user) => {
+      var statusColor = 'gray'
+      switch(user.status) {
+        case 'online':
+          statusColor = 'green'
+          break;
+        case 'occupied':
+          statusColor = 'red'
+          break;
+        case 'absent':
+          statusColor = 'yellow'
+          break;
+      }  
+
+      $('#usrs-panel').html('')
+      $('#usrs-panel').append('<li><div class="status ' + statusColor + '"></div>' + user.username + '</li>')
+    })
   })
 }

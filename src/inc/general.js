@@ -154,7 +154,7 @@ module.exports = {
     win.show()
   },
 
-  addAlert: function(content, color){
+  addAlert: function(content, color) {
     var alert = $('<div>').text(content).addClass('alert ' + color);
     $('#alertas').append(alert);
     setTimeout(function(){
@@ -162,6 +162,10 @@ module.exports = {
         $(this).remove();
       });
     }, 2000);
+  },
+
+  updateChannelIndex: (obj) => {
+    vars.socket.emit('updateChannelIndex', obj)
   }
 };
 

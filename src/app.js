@@ -1,4 +1,5 @@
-const $ = require('jquery')
+var $ = jQuery = require('jquery')
+require('jquery-ui-dist/jquery-ui')
 const electron = require('electron')
 const remote = electron.remote
 const vars = require('../inc/vars')
@@ -12,6 +13,19 @@ let contextMenuVisible = false
 
 $(document).ready(function(){
   funcs.createContextMenus()
+
+  $('#chnl-panel').sortable({
+    placeholder: 'channel-placeholder',
+    update: function() {
+      var final = [];
+      $('#chnl-panel > li').each(function() {
+        final.push({chnName: $(this).text(), pos: $(this).index()})
+      })
+      funcs.updateChannelIndex(final)
+    }
+  })
+
+  $('#chnl-panel').disableSelection()
 
   $('#close-btn').on('click', () => {
     if(vars.activeNotification != null){
@@ -71,7 +85,8 @@ $(document).ready(function(){
       if(e.which == 13){
         var channelName = input.val().replace(new RegExp('#', 'g'), '').trim()
         if(channelName.length > 0){
-          new Channel('#' + channelName).create()
+          var channelPos = $('#chnl-panel > li').length
+          new Channel('#' + channelName).create(channelPos)
           input.remove()
           $('#createChannelBtn').css('display', 'block')
         }
@@ -95,9 +110,39 @@ $(document).ready(function(){
   })
 
   $('#submitLogin').on('click', () => {
+    var options = {}
     var username = $('#loginUsernameInput').val().trim()
     var pwd = $('#loginPasswordInput').val().trim()
     var user = new User(null, username, pwd)
-    user.login()
+    if($('#hostLoginInput').val().trim() != '' || $('#portLoginInput').val().trim() != ''){
+      options = {host: $('#hostLoginInput').val().trim(), port: $('#portLoginInput').val().trim()}
+    }
+    user.login(options)
+  })
+
+  $('#loginMoreOptions').on('click', () => {
+    if($('#loginMoreOptionsGroup').css('display') == 'none'){
+      $('#loginMoreOptionsGroup').slideDown(250)
+    }else{
+      $('#loginMoreOptionsGroup').slideUp(250)
+    }
+  })
+
+  $('#notifBtn').on('click', () => {
+    if($('#notifBtn').attr('src') == 'file:///images/notif1_20.png'){
+      $('#notifBtn').attr('src', 'file:///images/notif2_20.png')
+    }else{
+      $('#notifBtn').attr('src', 'file:///images/notif1_20.png')
+    }
+  })
+
+  $('#cogBtn').on('click', () => {
+    $('#configPanel').toggle('slide', {direction: 'down'}, 300)
+
+    if($('#chatTop > hr').hasClass('hr-text-config')){
+      $('#chatTop > hr').removeClass('hr-text-config')
+    }else{
+      $('#chatTop > hr').addClass('hr-text-config')
+    }
   })
 })

@@ -9,7 +9,7 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
 
-mongoose.connect(config.dbURL, {useNewUrlParser: true})
+mongoose.connect(config.dbURL, {useNewUrlParser: true}) 
 mongoose.Promise = global.Promise
 let db = mongoose.connection
 
@@ -20,6 +20,7 @@ db.on('error', () => {
 let channelSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
   name: String,
+  position: Number,
   messages: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Messages'
@@ -59,7 +60,7 @@ io.on('connection', (client) => {
         bcrypt.compare(creds.password, user.password).then((res) => {
           if(res){
             var sessionHash = crypto.createHash('sha1').update(Math.random().toString(36), 'binary').digest('hex')
-            User.updateOne({username: creds.username}, {$set: {'sessionHash': sessionHash}}).exec()
+            User.updateOne({username: creds.username}, {$set: {'sessionHash': sessionHash, 'user_id': client.id}, 'status': 'online'}).exec()
             io.to(client.id).emit('loginRequestResponse', {'status': 'ok', 'sessionHash': sessionHash})
           }else{
             io.to(client.id).emit('loginRequestResponse', {'status': 'err', message: 'La contrasseña no es correcta'})
@@ -125,6 +126,7 @@ io.on('connection', (client) => {
         var chn = new Channel({
           _id: new mongoose.mongo.ObjectId(),
           name: channel.name,
+          position: channel.position,
           messages: []
         })
     
@@ -144,7 +146,24 @@ io.on('connection', (client) => {
     io.emit('removeChannelResponse', channel)
   })
 
+  client.on('updateChannelIndex', (channels) => {
+    channels.forEach(function(chn) {
+      Channel.updateOne({name: chn.chnName}, {$set: {position: chn.pos}}).exec()
+    })
+
+    Channel.find().exec((err, item) => {
+      io.emit('updateChannels', item)
+    })
+  })
+
+  client.on('getUsersOnline', () => {
+    User.find().exec((err, users) => {
+      io.emit('getUsersOnlineResponse', users)
+    })
+  })
+
   client.on('disconnect', () => {
+    User.updateOne({user_id: client.id}, {$set: {status: 'offline'}}).exec()
     console.log('Client disconnected: ', client.id)
   })
 
