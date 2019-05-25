@@ -128,6 +128,7 @@ module.exports = () => {
   })
 
   vars.socket.on('getUsersOnlineResponse', (users) => {
+    $('#usrs-panel').html('')
     users.forEach((user) => {
       var statusColor = 'gray'
       switch(user.status) {
@@ -142,7 +143,6 @@ module.exports = () => {
           break;
       }  
 
-      $('#usrs-panel').html('')
       $('#usrs-panel').append('<li><div class="status ' + statusColor + '"></div>' + user.username + '</li>')
     })
   })

@@ -51,6 +51,12 @@ let Channel = mongoose.model('Channels', channelSchema)
 let Message = mongoose.model('Messages', messagesSchema)
 let User = mongoose.model('Users', usersSchema)
 
+function getUsersOnline(){
+  User.find().exec((err, users) => {
+    io.emit('getUsersOnlineResponse', users)
+  })
+}
+
 io.on('connection', (client) => {
   console.log('User connected (' + client.id + ')')
 
@@ -157,13 +163,12 @@ io.on('connection', (client) => {
   })
 
   client.on('getUsersOnline', () => {
-    User.find().exec((err, users) => {
-      io.emit('getUsersOnlineResponse', users)
-    })
+    getUsersOnline()
   })
 
   client.on('disconnect', () => {
     User.updateOne({user_id: client.id}, {$set: {status: 'offline'}}).exec()
+    getUsersOnline()
     console.log('Client disconnected: ', client.id)
   })
 
