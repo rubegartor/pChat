@@ -167,8 +167,9 @@ io.on('connection', (client) => {
   })
 
   client.on('disconnect', () => {
-    User.updateOne({user_id: client.id}, {$set: {status: 'offline'}}).exec()
-    getUsersOnline()
+    User.updateOne({user_id: client.id}, {$set: {status: 'offline'}}).exec(() => {
+      getUsersOnline()
+    })
     console.log('Client disconnected: ', client.id)
   })
 
