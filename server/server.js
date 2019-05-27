@@ -82,7 +82,7 @@ io.on('connection', (client) => {
   })
 
   client.on('getChannels', () => {
-    Channel.find().populate({path:'messages', options: {limit: 0}}).exec((err, channels) => {
+    Channel.find().exec((err, channels) => {
       io.to(client.id).emit('setChannels', channels)
     })
   })
