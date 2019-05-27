@@ -43,8 +43,7 @@ let usersSchema = mongoose.Schema({
   user_id: String, 
   username: String,
   password: String,
-  status: Object,
-  sessionHash: String
+  status: Object
 })
 
 let Channel = mongoose.model('Channels', channelSchema)
@@ -171,7 +170,6 @@ io.on('connection', (client) => {
   })
 
   client.on('updateUsernameStatus', (user) => {
-    console.log(user)
     User.updateOne({user_id: client.id}, {$set: {'status': user.status}}).exec(() => {
       getUsersOnline()
     })
