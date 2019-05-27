@@ -43,13 +43,15 @@ let usersSchema = mongoose.Schema({
   user_id: String, 
   username: String,
   password: String,
-  status: String,
+  status: Object,
   sessionHash: String
 })
 
 let Channel = mongoose.model('Channels', channelSchema)
 let Message = mongoose.model('Messages', messagesSchema)
 let User = mongoose.model('Users', usersSchema)
+
+User.updateMany({status: 'online'}, {$set: {status: 'offline'}}).exec() //Set all offline clients to online on server startup
 
 function getUsersOnline(){
   User.find().exec((err, users) => {
@@ -65,9 +67,11 @@ io.on('connection', (client) => {
       if(user != null){
         bcrypt.compare(creds.password, user.password).then((res) => {
           if(res){
-            var sessionHash = crypto.createHash('sha1').update(Math.random().toString(36), 'binary').digest('hex')
-            User.updateOne({username: creds.username}, {$set: {'sessionHash': sessionHash, 'user_id': client.id}, 'status': 'online'}).exec()
-            io.to(client.id).emit('loginRequestResponse', {'status': 'ok', 'sessionHash': sessionHash})
+            User.findOne({username: creds.username}).exec((err, user) => {
+              User.updateOne({username: creds.username}, {$set: {'user_id': client.id}, 'status.main': 'online'}).exec(() => {
+                io.to(client.id).emit('loginRequestResponse', {'status': 'ok', 'username': creds.username, 'user_status': user.status})
+              })
+            })
           }else{
             io.to(client.id).emit('loginRequestResponse', {'status': 'err', message: 'La contrasseña no es correcta'})
           }
@@ -79,8 +83,8 @@ io.on('connection', (client) => {
   })
 
   client.on('getChannels', () => {
-    Channel.find().populate('messages').exec((err, item) => {
-      io.to(client.id).emit('setChannels', item)
+    Channel.find().populate({path:'messages', options: {limit: 0}}).exec((err, channels) => {
+      io.to(client.id).emit('setChannels', channels)
     })
   })
 
@@ -94,7 +98,7 @@ io.on('connection', (client) => {
   })
 
   client.on('getChannelMessages', (channel) => {
-    Channel.findOne({name: channel}).populate('messages').exec((err, item) => {
+    Channel.findOne({name: channel}).populate({path:'messages', options: {limit: 20, sort: {_id: -1}}}).exec((err, item) => {
       io.to(client.id).emit('getChannelMessagesResponse', item)
     })
   })
@@ -166,8 +170,15 @@ io.on('connection', (client) => {
     getUsersOnline()
   })
 
+  client.on('updateUsernameStatus', (user) => {
+    console.log(user)
+    User.updateOne({user_id: client.id}, {$set: {'status': user.status}}).exec(() => {
+      getUsersOnline()
+    })
+  })
+
   client.on('disconnect', () => {
-    User.updateOne({user_id: client.id}, {$set: {status: 'offline'}}).exec(() => {
+    User.updateOne({user_id: client.id}, {$set: {'status.main': 'offline'}}).exec(() => {
       getUsersOnline()
     })
     console.log('Client disconnected: ', client.id)

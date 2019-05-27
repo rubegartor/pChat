@@ -2,11 +2,11 @@ const io = require('socket.io-client')
 const vars = require('./vars')
 
 module.exports = class User{
-  constructor(user_id, username, password){
-    this.user_id = user_id
+  constructor(username){
+    this.user_id = null
     this.username = username
-    this.password = password
-    this.status = {'status': null, 'actualSession': null, 'lastLogin': null}
+    this.password = null
+    this.status = 'offline'
   }
 
   login(options){
@@ -27,7 +27,7 @@ module.exports = class User{
     vars.socket.emit('loginRequest', this)
   }
 
-  getStatus(){
-    vars.socket.emit()
+  updateStatus(){
+    vars.socket.emit('updateUsernameStatus', this)
   }
 }

@@ -10,6 +10,7 @@ const User = require('../inc/user')
 const contextFuncs = require('../inc/contextFuncs')
 
 let contextMenuVisible = false
+let absentTimeout = null;
 
 $(document).ready(function(){
   funcs.createContextMenus()
@@ -98,7 +99,7 @@ $(document).ready(function(){
     if(e.which == 13){
       if($(this).val().trim() != ''){
         var time = +new Date
-        var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, 'rubegartor', time, funcs.getActiveChannel(), $(this).val().trim())
+        var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), $(this).val().trim())
         message.send()
       }
       $(this).val('')
@@ -110,10 +111,14 @@ $(document).ready(function(){
   })
 
   $('#submitLogin').on('click', () => {
+    $('#submitLogin').prop('disabled', true)
+    funcs.addAlert('Conectando con el servidor...', 'alert-purple')
     var options = {}
     var username = $('#loginUsernameInput').val().trim()
     var pwd = $('#loginPasswordInput').val().trim()
-    var user = new User(null, username, pwd)
+    var user = new User(username)
+    user.user_id = null
+    user.password = pwd
     if($('#hostLoginInput').val().trim() != '' || $('#portLoginInput').val().trim() != ''){
       options = {host: $('#hostLoginInput').val().trim(), port: $('#portLoginInput').val().trim()}
     }
@@ -131,9 +136,15 @@ $(document).ready(function(){
   $('#notifBtn').on('click', () => {
     if($('#notifBtn').attr('src') == 'file:///images/notif1_20.png'){
       $('#notifBtn').attr('src', 'file:///images/notif2_20.png')
+      vars.me.status.main = 'online'
+      vars.me.status.notif = true
     }else{
       $('#notifBtn').attr('src', 'file:///images/notif1_20.png')
+      vars.me.status.main = 'online'
+      vars.me.status.notif = false
     }
+
+    vars.me.updateStatus()
   })
 
   $('#cogBtn').on('click', () => {
@@ -145,4 +156,23 @@ $(document).ready(function(){
       $('#chatTop > hr').addClass('hr-text-config')
     }
   })
+
+  window.onblur = function(){
+    if(vars.me != null){
+      absentTimeout = setTimeout(() => {
+        vars.me.status.main = 'absent'
+        vars.me.updateStatus()
+      }, 60000)
+    }
+  }
+
+  window.onfocus = function(){
+    if(vars.me != null){
+      if(vars.me.status.main != 'online'){
+        clearTimeout(absentTimeout)
+        vars.me.status.main = 'online'
+        vars.me.updateStatus()
+      }
+    }
+  }
 })

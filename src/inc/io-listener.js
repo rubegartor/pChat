@@ -1,10 +1,31 @@
 module.exports = () => {
   vars.socket.on('disconnect', () => {
-    console.log('disconnected from server')
+    $('#mainInput').css('display', 'none')
+    $('#sidebar').css('visibility', 'hidden')
+    $('#controlImages').css('display', 'none')
+    $('#chatTop').css('left', '100px')
+    $('#chatTop').css('width', 'calc(100% - 120px)')
+    $('#loginBg').css('display', 'block')
+    $('#chnl-hr').attr('data-content', '')
+
+    try{
+      vars.socket.disconnect()
+    }catch(err){}
+    vars.socket = null
+    vars.me = null
+
+    $('#submitLogin').prop('disabled', false)
   })
 
   vars.socket.on('loginRequestResponse', (response) => {
     if(response.status == 'ok'){
+      var user = new User(response.username)
+      user.user_id = vars.socket.id
+      user.password = null
+      user.status = response.user_status
+
+      vars.me = user
+      
       vars.socket.emit('getChannels')
       vars.socket.emit('getUsersOnline')
 
@@ -14,6 +35,8 @@ module.exports = () => {
       $('#chatTop').css('width', 'calc(100% - ' + ($('#controlImages').width() + $('#sidebar').width() + 40) + 'px)')
       $('#chatTop').css('left', '260px')
       $('#loginBg').css('display', 'none')
+
+      funcs.loadUserConfig()
     }else{
       vars.socket.disconnect()
     }
@@ -79,6 +102,7 @@ module.exports = () => {
   })
   
   vars.socket.on('getChannelMessagesResponse', (resp) => {
+    resp.messages = resp.messages.reverse()
     resp.messages.forEach((msg) => {
       var datetime = new Date(msg.time)
       var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
@@ -131,17 +155,18 @@ module.exports = () => {
     $('#usrs-panel').html('')
     users.forEach((user) => {
       var statusColor = 'gray'
-      switch(user.status) {
-        case 'online':
-          statusColor = 'green'
-          break;
-        case 'occupied':
-          statusColor = 'red'
-          break;
-        case 'absent':
-          statusColor = 'yellow'
-          break;
-      }  
+      if(user.status.notif != false){
+        switch(user.status.main) {
+          case 'online':
+            statusColor = 'green'
+            break;
+          case 'absent':
+            statusColor = 'yellow'
+            break;
+        } 
+      }else{
+        statusColor = 'red'
+      }
 
       $('#usrs-panel').append('<li><div class="status ' + statusColor + '"></div>' + user.username + '</li>')
     })

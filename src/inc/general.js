@@ -166,6 +166,14 @@ module.exports = {
 
   updateChannelIndex: (obj) => {
     vars.socket.emit('updateChannelIndex', obj)
+  },
+
+  loadUserConfig: () => {
+    if(vars.me.status.notif == true){
+      $('#notifBtn').attr('src', 'file:///images/notif2_20.png')
+    }else{
+      $('#notifBtn').attr('src', 'file:///images/notif1_20.png')
+    }
   }
-};
+}
 
