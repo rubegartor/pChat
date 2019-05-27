@@ -85,14 +85,20 @@ module.exports = () => {
 
   vars.socket.on('messageResponse', (msg) => {
     var datetime = new Date(msg.time)
-    var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
-    var message = new Message(msg.id, msg.user_id, msg.username, time, msg.channel, msg.content)
+    var message = new Message(msg.id, msg.user_id, msg.username, datetime, msg.channel, msg.content)
 
     if($('#chat-messages > div').length == 0){
       $('#chat-messages').append(message.toHTML())
     }else{
       if($('#chat-messages > div:last > div:last > span').attr('user_id') == message.user_id){
-        $('#chat-messages > div:last > div:last').append(message.toAppend())
+        var datetimePrev = new Date($('#chat-messages > div:last > div:last > span').attr('datetime'))
+        datetimePrev = new Date(datetimePrev.setMinutes(datetimePrev.getMinutes() + 15)) //15 min
+
+        if(datetimePrev < datetime){
+          $('#chat-messages').append(message.toHTML())
+        }else{
+          $('#chat-messages > div:last > div:last').append(message.toAppend())
+        }
       }else{
         $('#chat-messages').append(message.toHTML())
       }
@@ -105,8 +111,7 @@ module.exports = () => {
     resp.messages = resp.messages.reverse()
     resp.messages.forEach((msg) => {
       var datetime = new Date(msg.time)
-      var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
-      var message = new Message(msg.id, msg.user_id, msg.username, time, msg.channel, msg.content)
+      var message = new Message(msg.id, msg.user_id, msg.username, datetime, msg.channel, msg.content)
 
       if($('#chat-messages > div').length == 0){
         $('#chat-messages').append(message.toHTML())

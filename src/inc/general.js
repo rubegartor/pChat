@@ -155,13 +155,13 @@ module.exports = {
   },
 
   addAlert: function(content, color) {
-    var alert = $('<div>').text(content).addClass('alert ' + color);
-    $('#alertas').append(alert);
+    var alert = $('<div>').text(content).addClass('alert ' + color)
+    $('#alertas').append(alert)
     setTimeout(function(){
       alert.fadeOut(1200, function(){
-        $(this).remove();
-      });
-    }, 2000);
+        $(this).remove()
+      })
+    }, 2000)
   },
 
   updateChannelIndex: (obj) => {

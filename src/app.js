@@ -134,13 +134,13 @@ $(document).ready(function(){
   })
 
   $('#notifBtn').on('click', () => {
+    vars.me.status.main = 'online'
+
     if($('#notifBtn').attr('src') == 'file:///images/notif1_20.png'){
-      $('#notifBtn').attr('src', 'file:///images/notif2_20.png')
-      vars.me.status.main = 'online'
+      $('#notifBtn').attr('src', 'file:///images/notif2_20.png')  
       vars.me.status.notif = true
     }else{
       $('#notifBtn').attr('src', 'file:///images/notif1_20.png')
-      vars.me.status.main = 'online'
       vars.me.status.notif = false
     }
 
