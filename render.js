@@ -1,5 +1,4 @@
 const { app, BrowserWindow, Tray, globalShortcut, Menu } = require('electron')
-const Badge = require('electron-windows-badge')
 const path = require('path')
 
 let win
@@ -30,20 +29,15 @@ function createWindow () {
 
   var contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Restaurar', click: function () {
+      label: 'Restaurar', click: () => {
         win.show()
-      }
-    },
-    {
-      label: 'Configuración', click: function (){
-        //win.webContents.send('openConfig')
       }
     },
     {
       type: 'separator' 
     },
     {
-      label: 'Cerrar', click: function () {
+      label: 'Cerrar', click: () => {
         app.isQuiting = true
         app.quit()
       }
@@ -67,8 +61,6 @@ function createWindow () {
       win.show()
     }
   })
-
-  new Badge(win, {})
 }
 
 app.on('ready', () => {
