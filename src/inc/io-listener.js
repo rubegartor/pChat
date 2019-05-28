@@ -38,6 +38,7 @@ module.exports = () => {
 
       funcs.loadUserConfig()
     }else{
+      funcs.addAlert(response.message, 'alert-red')
       vars.socket.disconnect()
     }
   })

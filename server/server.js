@@ -72,7 +72,7 @@ io.on('connection', (client) => {
               })
             })
           }else{
-            io.to(client.id).emit('loginRequestResponse', {'status': 'err', message: 'La contrasseña no es correcta'})
+            io.to(client.id).emit('loginRequestResponse', {'status': 'err', message: 'La contraseña no es correcta'})
           }
         })
       }else{

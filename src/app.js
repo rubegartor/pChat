@@ -105,10 +105,6 @@ $(document).ready(function(){
       $(this).val('')
     }
   })
-  
-  $(window).on('click', () => {
-    if(contextMenuVisible) funcs.toggleMenu($('.contextmenu'), 'hide')
-  })
 
   $('#submitLogin').on('click', () => {
     $('#submitLogin').prop('disabled', true)
@@ -157,16 +153,20 @@ $(document).ready(function(){
     }
   })
 
-  window.onblur = function(){
+  $(window).on('click', () => {
+    if(contextMenuVisible) funcs.toggleMenu($('.contextmenu'), 'hide')
+  })
+
+  $(window).on('blur', () => {
     if(vars.me != null){
       absentTimeout = setTimeout(() => {
         vars.me.status.main = 'absent'
         vars.me.updateStatus()
-      }, 60000)
+      }, 60000) //60 secs
     }
-  }
+  })
 
-  window.onfocus = function(){
+  $(window).on('focus', () => {
     if(vars.me != null){
       if(vars.me.status.main != 'online'){
         clearTimeout(absentTimeout)
@@ -174,5 +174,5 @@ $(document).ready(function(){
         vars.me.updateStatus()
       }
     }
-  }
+  })
 })
