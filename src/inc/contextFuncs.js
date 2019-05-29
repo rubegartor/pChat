@@ -20,8 +20,8 @@ module.exports = {
     var user_id = message.attr('user_id')
     var username = message.parent().prev().find('span.message-username').text()
     var time = message.parent().prev().find('span.message-time').text()
-  
-    new Message(id, user_id, username, time, vars.activeChannel, content).remove()
+
+    new Message(id, user_id, username, time, funcs.getActiveChannel(), content).remove()
   },
 
   editChannel: (clickedElement) => {
@@ -35,6 +35,10 @@ module.exports = {
   cancelCreateChannel: () => {
     $('#createChannelBtn').css('display', 'block')
     $('#chnl-panel > input').remove()
+  },
+
+  infoChannel: (clickedElement) => {
+    console.log('info Channel')
   },
 
   copyMainInput: (clickedElement) => {

@@ -1,4 +1,5 @@
-var $ = jQuery = require('jquery')
+const $ = jQuery = require('jquery')
+const jimp = require('jimp')
 require('jquery-ui-dist/jquery-ui')
 const electron = require('electron')
 const remote = electron.remote
@@ -10,7 +11,7 @@ const User = require('../inc/user')
 const contextFuncs = require('../inc/contextFuncs')
 
 let contextMenuVisible = false
-let absentTimeout = null;
+let absentTimeout = null
 
 $(document).ready(function(){
   funcs.createContextMenus()
@@ -18,7 +19,7 @@ $(document).ready(function(){
   $('#chnl-panel').sortable({
     placeholder: 'channel-placeholder',
     update: function() {
-      var final = [];
+      var final = []
       $('#chnl-panel > li').each(function() {
         final.push({chnName: $(this).text(), pos: $(this).index()})
       })
@@ -152,6 +153,43 @@ $(document).ready(function(){
       $('#chatTop > hr').addClass('hr-text-config')
     }
   })
+
+  $(window).on('dragover', (e) => {
+    e.stopPropagation()
+    e.preventDefault()
+    return true
+  })
+
+  $(window).on('drop', (e) =>{
+    e.preventDefault()
+    e.stopPropagation()
+
+    for(let f of e.originalEvent.dataTransfer.files) {
+      var type = f.type.split('/')
+      if(vars.socket.connected && type[0] == 'image'){
+        var b64 = funcs.base64Encode(f.path)
+        var buff = Buffer.from(b64, 'base64')
+
+        jimp.read(buff).then((img) => {
+          if(img.bitmap.width > 0 && img.bitmap.height > 0){
+            var time = +new Date
+            var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+            message.image = b64
+            message.send()
+          }else{
+            funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
+          }
+        }).catch(() => {
+          funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
+        })
+      }else{
+        //Otros tipos de archivo
+      }
+    }
+
+    return false
+  })
+
 
   $(window).on('click', () => {
     if(contextMenuVisible) funcs.toggleMenu($('.contextmenu'), 'hide')

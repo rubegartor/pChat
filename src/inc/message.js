@@ -9,6 +9,8 @@ module.exports = class Message{
     this.content = content
     this.time = time
     this.channel = channel
+    this.image = null
+    this.file = null
     this.state = {edited: false}
   }
 
@@ -34,7 +36,16 @@ module.exports = class Message{
     var line = $('<span>').addClass('message-line').text(this.content).attr({user_id: this.user_id, id: this.id, datetime: this.time})
     header.append($('<span>').addClass('message-username').text(this.username))
     header.append($('<span>').addClass('message-time').text(time))
-    message.append(line)
+    if(this.image != null){
+      var image = $('<img>').attr({id: this.id, src: 'data:image/jpeg;base64,' + this.image}).addClass('imageMsg')
+      var imageContainer = $('<span>').attr({user_id: this.user_id, id: this.id, datetime: this.time}).append(image)
+      image.on('load', function() {
+        funcs.scroll()
+      })
+      message.append(imageContainer)
+    }else{
+      message.append(line)
+    }
     container.append(header)
     container.append(message)
 
@@ -42,7 +53,20 @@ module.exports = class Message{
   }
 
   toAppend(){
-    return $('<span>').addClass('message-line').text(this.content).attr({user_id: this.user_id, id: this.id})
+    var toRet = null
+    if(this.image != null){
+      var image = $('<img>').attr({id: this.id, src: 'data:image/jpeg;base64,' + this.image}).addClass('imageMsg')
+      var imageContainer = $('<span>').attr({user_id: this.user_id, id: this.id, datetime: this.time}).append(image)
+      image.on('load', function() {
+        funcs.scroll()
+      })
+      toRet = imageContainer
+    }else{
+      toRet = $('<span>').addClass('message-line').text(this.content).attr({user_id: this.user_id, id: this.id})
+    }
+
+    funcs.scroll()
+    return toRet
   }
 
   get edited(){

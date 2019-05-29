@@ -1,4 +1,5 @@
 const crypto = require('crypto')
+const fs = require('fs')
 const contextFuncs = require('./contextFuncs')
 const remote = require('electron').remote
 
@@ -71,10 +72,16 @@ module.exports = {
       $('<li>').addClass('menu-option').attr('id', 'contextmenu-editMsgBtn').text('Editar mensaje'),
       $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeMsgBtn').text('Eliminar mensaje')
     ]
+
+    var imageContextMenuOptions = [
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeImageBtn').text('Eliminar imagen')
+    ]
   
     var channelContextMenuOptions = [
       $('<li>').addClass('menu-option').attr('id', 'contextmenu-editChannelBtn').text('Editar canal'),
-      $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeChannelBtn').text('Eliminar canal')
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeChannelBtn').text('Eliminar canal'),
+      $('<li>').addClass('menu-separator'),
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-infoChannelBtn').text('Información'),
     ]
 
     var mainInputContextMenuOptions = [
@@ -86,10 +93,12 @@ module.exports = {
     ]
   
     var messageContextMenuFuncs = [contextFuncs.copyMessage, null, contextFuncs.editMessage, contextFuncs.removeMessage]
-    var channelContextMenuFuncs = [contextFuncs.editChannel, contextFuncs.removeChannel]
+    var imageContextMenuFuncs = [contextFuncs.removeMessage]
+    var channelContextMenuFuncs = [contextFuncs.editChannel, contextFuncs.removeChannel, null, contextFuncs.infoChannel]
     var mainInputContextMenuFuncs = [contextFuncs.copyMainInput, contextFuncs.pasteMainInput, null, contextFuncs.clearMainInput, contextFuncs.selectAllMainInput]
   
     this.addContextMenu($('#chat-messages'), '.message-line', messageContextMenuOptions, messageContextMenuFuncs)
+    this.addContextMenu($('#chat-messages'), '.imageMsg', imageContextMenuOptions, imageContextMenuFuncs)
     this.addContextMenu($('#chnl-panel'), 'li', channelContextMenuOptions, channelContextMenuFuncs)
     this.addContextMenu($('#chatBottom'), '#mainInput', mainInputContextMenuOptions, mainInputContextMenuFuncs)
   },
@@ -174,6 +183,11 @@ module.exports = {
     }else{
       $('#notifBtn').attr('src', 'file:///images/notif1_20.png')
     }
+  },
+
+  base64Encode: (file) => {
+    var body = fs.readFileSync(file)
+    return body.toString('base64')
   }
 }
 

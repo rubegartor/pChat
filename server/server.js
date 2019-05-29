@@ -7,7 +7,6 @@ const server = require('https').createServer({
 const io = require('socket.io')(server)
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
-const crypto = require('crypto')
 
 mongoose.connect(config.dbURL, {useNewUrlParser: true}) 
 mongoose.Promise = global.Promise
@@ -35,6 +34,8 @@ let messagesSchema = mongoose.Schema({
   content: String,
   time: Number,
   channel: String,
+  image: String,
+  file: String,
   state: Object
 })
 
@@ -111,7 +112,9 @@ io.on('connection', (client) => {
       content: message.content,
       time: message.time,
       channel: message.channel,
-      state: message.state
+      state: message.state,
+      file: message.file,
+      image: message.image
     })
 
     msg.save((err) => {

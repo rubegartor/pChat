@@ -87,6 +87,9 @@ module.exports = () => {
   vars.socket.on('messageResponse', (msg) => {
     var datetime = new Date(msg.time)
     var message = new Message(msg.id, msg.user_id, msg.username, datetime, msg.channel, msg.content)
+    if(msg.image != null){
+      message.image = msg.image
+    }
 
     if($('#chat-messages > div').length == 0){
       $('#chat-messages').append(message.toHTML())
@@ -113,6 +116,9 @@ module.exports = () => {
     resp.messages.forEach((msg) => {
       var datetime = new Date(msg.time)
       var message = new Message(msg.id, msg.user_id, msg.username, datetime, msg.channel, msg.content)
+      if(msg.image != null){
+        message.image = msg.image
+      }
 
       if($('#chat-messages > div').length == 0){
         $('#chat-messages').append(message.toHTML())
@@ -123,9 +129,9 @@ module.exports = () => {
           $('#chat-messages').append(message.toHTML())
         }
       }
-
-      funcs.scroll()
     })
+    
+    funcs.scroll()
   })
 
   vars.socket.on('removeMessageResponse', (message) => {

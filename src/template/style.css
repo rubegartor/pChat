@@ -380,6 +380,7 @@ a:active{
   width: auto;
   display: none;
   border-radius: 4px;
+  z-index: 100000;
 }
 
 .contextmenu .menu-options {
@@ -778,4 +779,19 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+.imageMsg{
+  display: block;
+  max-width: 300px;
+  max-height: 400px;
+  height: auto;
+  cursor: pointer;
+  border-radius: 3px;
+  margin: 10px 0px;
+  -webkit-user-drag: none;
+}
+
+.imageMsg:hover{
+  opacity: 0.8;
 }
