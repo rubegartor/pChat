@@ -1,4 +1,6 @@
 const { clipboard } = require('electron')
+const { dialog } = require('electron').remote
+const fs = require('fs')
 
 module.exports = {
   copyMessage: (clickedElement) => {
@@ -60,5 +62,20 @@ module.exports = {
 
   selectAllMainInput: () => {
     $('#mainInput').select()
+  },
+
+  saveImage: (clickedElement) => {
+    var savePath = dialog.showSaveDialog({filters: [{ name: 'Imágenes (.png)', extensions: ['png'] }]})
+
+    if(savePath != undefined){
+      var imageBuffer = clickedElement.attr('src').replace('data:image/png;base64,', '')
+      fs.writeFile(savePath, imageBuffer, 'base64', function(err) {
+        if(err){
+          funcs.addAlert('No se ha podido guardar la imagen', 'alert-red')
+        }else{
+          funcs.addAlert('Se ha guardado la imagen', 'alert-green')
+        }
+      })
+    }
   }
 }

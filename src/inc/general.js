@@ -74,7 +74,8 @@ module.exports = {
     ]
 
     var imageContextMenuOptions = [
-      $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeImageBtn').text('Eliminar imagen')
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-removeImageBtn').text('Eliminar imagen'),
+      $('<li>').addClass('menu-option').attr('id', 'contextmenu-saveImageBtn').text('Guardar')
     ]
   
     var channelContextMenuOptions = [
@@ -93,7 +94,7 @@ module.exports = {
     ]
   
     var messageContextMenuFuncs = [contextFuncs.copyMessage, null, contextFuncs.editMessage, contextFuncs.removeMessage]
-    var imageContextMenuFuncs = [contextFuncs.removeMessage]
+    var imageContextMenuFuncs = [contextFuncs.removeMessage, contextFuncs.saveImage]
     var channelContextMenuFuncs = [contextFuncs.editChannel, contextFuncs.removeChannel, null, contextFuncs.infoChannel]
     var mainInputContextMenuFuncs = [contextFuncs.copyMainInput, contextFuncs.pasteMainInput, null, contextFuncs.clearMainInput, contextFuncs.selectAllMainInput]
   
