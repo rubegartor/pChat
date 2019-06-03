@@ -20,6 +20,12 @@ module.exports = class Channel{
     vars.socket.emit('joinChannel', this)
   }
 
+  edit(newName){
+    var channelName = this.name
+    this.name = newName
+    vars.socket.emit('editChannel', {toEdit: channelName, newChannel: this})
+  }
+
   toHTML(){
     return $('<li>').text(this.name)
   }

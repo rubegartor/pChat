@@ -164,10 +164,10 @@ module.exports = {
     win.show()
   },
 
-  addAlert: function(content, color) {
+  addAlert: (content, color) => {
     var alert = $('<div>').text(content).addClass('alert ' + color)
     $('#alertas').append(alert)
-    setTimeout(function(){
+    setTimeout(() => {
       alert.fadeOut(1200, function(){
         $(this).remove()
       })

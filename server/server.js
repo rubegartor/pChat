@@ -168,6 +168,14 @@ io.on('connection', (client) => {
     })
   })
 
+  client.on('editChannel', (data) => {
+    data.toEdit = '#' + data.toEdit
+    data.newChannel.name = '#' + data.newChannel.name
+    Channel.updateOne({name: data.toEdit}, {$set: {'name': data.newChannel.name}}).exec(() => {
+      io.emit('editChannelResponse', data)
+    })
+  })
+
   client.on('getUsersOnline', () => {
     getUsersOnline()
   })

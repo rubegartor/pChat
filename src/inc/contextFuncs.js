@@ -27,7 +27,17 @@ module.exports = {
   },
 
   editChannel: (clickedElement) => {
-    console.log('edit Channel')
+    var beforeText = clickedElement.text().replace(new RegExp('#', 'g'), '')
+    var input = $('<input>').addClass('editChannelInput').val(beforeText).attr('placeholder', 'Nuevo canal...')
+    clickedElement.attr('beforeText', '#' + beforeText)
+    clickedElement.html(input)
+
+    input.on('keypress', (e) => {
+      if(e.which == 13){
+        var newName = input.val().replace(new RegExp('#', 'g'), '').trim()
+        new Channel(beforeText).edit(newName)
+      }
+    })
   },
 
   removeChannel: (clickedElement) => {

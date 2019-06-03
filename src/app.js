@@ -53,12 +53,14 @@ $(document).ready(function(){
   })
 
   $('#chnl-panel').on('click', 'li', function(){
-    $('#chnl-panel > li').removeClass('active-channel')
-    $('#mainInput').prop('disabled', false)
-    $(this).addClass('active-channel')
-    $('#chnl-hr').attr('data-content', $(this).text())
-    new Channel($(this).text()).join()
-    funcs.loadChannelMessages()
+    if($(this).children('input').length == 0){
+      $('#chnl-panel > li').removeClass('active-channel')
+      $('#mainInput').prop('disabled', false)
+      $(this).addClass('active-channel')
+      $('#chnl-hr').attr('data-content', $(this).text())
+      new Channel($(this).text()).join()
+      funcs.loadChannelMessages()
+    }
   })
 
   $('#toggleUsersViewBtn').on('click', () => {

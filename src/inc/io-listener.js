@@ -70,6 +70,18 @@ module.exports = () => {
     })
   })
 
+  vars.socket.on('editChannelResponse', (newChannel) => {
+    $('#chnl-panel > li').each(function() {
+      if($(this)[0].hasAttribute('beforeText')){
+        if($(this).attr('beforeText') == newChannel.toEdit){
+          $(this).removeAttr('beforeText')
+          $(this).html('')
+          $(this).text(newChannel.newChannel.name)
+        }
+      }
+    })
+  })
+
   vars.socket.on('createChannelResponse', function(resp){
     if(resp.status == 'ok'){
       var channel = new Channel(resp.data.name)
@@ -81,6 +93,20 @@ module.exports = () => {
       }
     }else{
       funcs.addAlert('El canal ya existe', 'alert-yellow')
+    }
+  })
+
+  vars.socket.on('removeChannelResponse', (channel) => {
+    $('#chnl-panel > li').each(function() {
+      if($(this).text() === channel.name){
+        $(this).remove()
+        return false
+      }
+    })
+
+    if(funcs.getActiveChannel().length == 0){
+      $('#chat-messages').html('')
+      funcs.selectFirstChannel()
     }
   })
 
@@ -146,20 +172,6 @@ module.exports = () => {
       elementParent.remove()
       elementTime.remove()
       elementUser.remove()
-    }
-  })
-
-  vars.socket.on('removeChannelResponse', (channel) => {
-    $('#chnl-panel > li').each(function() {
-      if($(this).text() === channel.name){
-        $(this).remove()
-        return false
-      }
-    })
-
-    if(funcs.getActiveChannel().length == 0){
-      $('#chat-messages').html('')
-      funcs.selectFirstChannel()
     }
   })
 
