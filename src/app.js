@@ -225,7 +225,7 @@ $(document).ready(function(){
       event.preventDefault()
     }
   }).autocomplete({
-    minLength: 0,
+    minLength: 1,
     position: {my : 'left bottom-10', at: 'left top'},
     source: (request, response) => {
       var term = request.term, results = []

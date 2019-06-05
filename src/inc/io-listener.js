@@ -163,12 +163,14 @@ module.exports = () => {
   vars.socket.on('removeMessageResponse', (message) => {
     var element = $('span[id="' + message.id + '"]')
     var elementParent = element.parent('div')
+    var elementContainer = elementParent.parent()
     var elementTime = elementParent.prev()
     var elementUser = elementTime.prev()
     var countChildren = elementParent.children().length - 1
     element.remove()
   
     if(countChildren == 0){
+      elementContainer.remove()
       elementParent.remove()
       elementTime.remove()
       elementUser.remove()
