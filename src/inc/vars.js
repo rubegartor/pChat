@@ -1,5 +1,6 @@
 module.exports = {
   socket: null,
   activeNotification: null,
-  me: null
+  me: null,
+  users: []
 }
