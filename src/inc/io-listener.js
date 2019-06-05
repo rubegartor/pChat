@@ -176,8 +176,10 @@ module.exports = () => {
   })
 
   vars.socket.on('getUsersOnlineResponse', (users) => {
+    var finalUsers = []
     $('#usrs-panel').html('')
     users.forEach((user) => {
+      finalUsers.push('@' + user.username)
       var statusColor = 'gray'
       if(user.status.notif != false){
         switch(user.status.main) {
@@ -192,6 +194,7 @@ module.exports = () => {
         statusColor = 'red'
       }
 
+      vars.users = finalUsers
       $('#usrs-panel').append('<li><div class="status ' + statusColor + '"></div>' + user.username + '</li>')
     })
   })
