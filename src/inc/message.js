@@ -30,10 +30,14 @@ module.exports = class Message{
     var datetime = new Date(this.time)
     var time = ('0' + datetime.getHours()).slice(-2) + ':' + ('0' + datetime.getMinutes()).slice(-2)
 
+    this.content = this.content.replace(/\B\@([\w\-]+)/gim, function(match){
+      return '<span class="mention">' + match + '</span>'
+    })
+
     var container =  $('<div>').addClass('message-container')
     var header = $('<div>').addClass('message-header')
     var message = $('<div>').addClass('message')
-    var line = $('<span>').addClass('message-line').text(this.content).attr({user_id: this.user_id, id: this.id, datetime: this.time})
+    var line = $('<span>').addClass('message-line').html(this.content).attr({user_id: this.user_id, id: this.id, datetime: this.time})
     header.append($('<span>').addClass('message-username').text(this.username))
     header.append($('<span>').addClass('message-time').text(time))
     if(this.image != null){
@@ -62,7 +66,10 @@ module.exports = class Message{
       })
       toRet = imageContainer
     }else{
-      toRet = $('<span>').addClass('message-line').text(this.content).attr({user_id: this.user_id, id: this.id})
+      this.content = this.content.replace(/\B\@([\w\-]+)/gim, function(match){
+        return '<span class="mention">' + match + '</span>'
+      })
+      toRet = $('<span>').addClass('message-line').html(this.content).attr({user_id: this.user_id, id: this.id})
     }
 
     funcs.scroll()
