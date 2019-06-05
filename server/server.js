@@ -7,6 +7,12 @@ const server = require('https').createServer({
 const io = require('socket.io')(server)
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
+const createDOMPurify = require('dompurify')
+const { JSDOM } = require('jsdom')
+const striptags = require('striptags')
+
+const window = (new JSDOM('')).window
+const DOMPurify = createDOMPurify(window)
 
 mongoose.connect(config.dbURL, {useNewUrlParser: true}) 
 mongoose.Promise = global.Promise
@@ -104,12 +110,15 @@ io.on('connection', (client) => {
   })
 
   client.on('message', (message) => {
+    var finalMessage = DOMPurify.sanitize(striptags(message.content, ['u', 'i', 'b']))
+    var haveText = DOMPurify.sanitize(striptags(message.content)).length
+
     var msg = new Message({
       _id: new mongoose.mongo.ObjectId(),
       id: message.id,
       user_id: message.user_id,
       username: message.username,
-      content: message.content,
+      content: finalMessage,
       time: message.time,
       channel: message.channel,
       state: message.state,
@@ -123,7 +132,10 @@ io.on('connection', (client) => {
 
     Channel.updateOne({name: message.channel}, {$push: {messages: msg._id}}).exec()
 
-    io.in(message.channel).emit('messageResponse', message)
+    if(finalMessage.trim().length > 0 && haveText > 0){
+      message.content = finalMessage
+      io.in(message.channel).emit('messageResponse', message)
+    }
   })
 
   client.on('removeMessage', (message) => {
