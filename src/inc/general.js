@@ -189,6 +189,31 @@ module.exports = {
   base64Encode: (file) => {
     var body = fs.readFileSync(file)
     return body.toString('base64')
+  },
+
+  splitAutocomplete: (val) => {
+    return val.split(/@\s*/)
+  },
+
+  extractLastAutocomplete: function(term) {
+    return '@' + this.splitAutocomplete(term).pop()
+  },
+
+  setCaretPosition: (elem, caretPos) => {
+    if(elem != null) {
+      if(elem.createTextRange) {
+        var range = elem.createTextRange()
+        range.move('character', caretPos)
+        range.select()
+      }else{
+        if(elem.selectionStart) {
+          elem.focus()
+          elem.setSelectionRange(caretPos, caretPos)
+        }else{
+          elem.focus()
+        }
+      }
+    }
   }
 }
 
