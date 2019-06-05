@@ -156,6 +156,10 @@ $(document).ready(function(){
     }
   })
 
+  $('#searchBtn').on('click', () => {
+    $('#searchPanel').toggle('slide', {direction: 'right'}, 200)
+  })
+
   $(window).on('dragover', (e) => {
     e.stopPropagation()
     e.preventDefault()
@@ -213,6 +217,45 @@ $(document).ready(function(){
         vars.me.status.main = 'online'
         vars.me.updateStatus()
       }
+    }
+  })
+
+  $('#mainInput').on('keydown', function(event) {
+    if (event.keyCode === $.ui.keyCode.TAB) {
+      event.preventDefault()
+    }
+  }).autocomplete({
+    minLength: 0,
+    position: {my : 'left bottom-10', at: 'left top'},
+    source: (request, response) => {
+      var term = request.term, results = []
+      if (term.indexOf('@') >= 0) {
+        term = funcs.extractLastAutocomplete(request.term)
+        if (term.length > 0) {
+          results = new RegExp('^' + $.ui.autocomplete.escapeRegex(term), 'i')
+          response($.grep(vars.users, (item) => {
+            return results.test(item)
+          }))
+        }else{
+          response(vars.users)
+        }
+      }else{
+        response(results)
+      }
+    },
+    focus: () => {
+      return false
+    },
+    select: function(e, ui) {
+      var pos = this.selectionStart
+      var substr = this.value.substring(0, pos)
+      var lastIndex = substr.lastIndexOf('@')
+      if (lastIndex >= 0){
+        var prependStr = this.value.substring(0, lastIndex)
+        this.value = prependStr + ui.item.value + this.value.substr(pos)
+        funcs.setCaretPosition(this, prependStr.length + ui.item.value.length + 1)
+      }    
+      return false
     }
   })
 })
