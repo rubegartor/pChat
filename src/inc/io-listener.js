@@ -74,7 +74,7 @@ module.exports = () => {
     $('#chnl-panel > li').each(function() {
       if($(this)[0].hasAttribute('beforeText')){
         if($(this).attr('beforeText') == newChannel.toEdit){
-          $(this).removeAttr('beforeText')
+          $(this).attr('beforeText', newChannel.newChannel.name)
           $(this).html('')
           $(this).text(newChannel.newChannel.name)
         }

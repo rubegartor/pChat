@@ -29,7 +29,6 @@ module.exports = {
   editChannel: (clickedElement) => {
     var beforeText = clickedElement.text().replace(new RegExp('#', 'g'), '')
     var input = $('<input>').addClass('editChannelInput').val(beforeText).attr('placeholder', 'Nuevo canal...')
-    clickedElement.attr('beforeText', '#' + beforeText)
     clickedElement.html(input)
 
     input.on('keypress', (e) => {

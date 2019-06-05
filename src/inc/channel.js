@@ -27,6 +27,6 @@ module.exports = class Channel{
   }
 
   toHTML(){
-    return $('<li>').text(this.name)
+    return $('<li>').text(this.name).attr('beforeText', this.name)
   }
 }
