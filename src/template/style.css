@@ -318,7 +318,7 @@ a:active{
   margin-right: 15px;
 }
 
-.message-line{
+.message-line, b, u, i{
   display: block;
   word-wrap: break-word;
   word-break: break-all;
@@ -828,11 +828,60 @@ input:checked + .slider:before {
   border: 0;
   border-radius: 5px;
   padding: 0px 12px;
-  margin-top: 5px;
+  margin-top: 10px;
   font-size: 0.95rem;
   color: var(--text-color);
 }
 
 .searchTextBg .searchInput::placeholder{
   color: rgba(255, 255, 255, 0.6);
+}
+
+.ui-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  float: left;
+  min-width: 160px;
+  padding: 5px 0;
+  list-style: none;
+  text-align: left;
+  background-color: var(--sidebar);
+  border-radius: 4px;
+}
+
+.ui-autocomplete > li > div {
+  display: block;
+  padding: 8px 20px;
+  clear: both;
+  font-weight: normal;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+.ui-state-hover,
+.ui-state-active,
+.ui-state-focus {
+  text-decoration: none;
+  color: var(--text-color);
+  background-color: var(--separator);
+  cursor: pointer;
+}
+
+.ui-helper-hidden-accessible {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.mention{
+  color: var(--switch);
+  user-select: text;
 }
