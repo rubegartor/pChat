@@ -494,6 +494,15 @@ a:active{
   font-size: 1.1em;
 }
 
+.mainNotif .notifRight .content{
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: var(--text-color);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .mainNotif .notifRight .green{
   color: var(--greenControl);
 }
