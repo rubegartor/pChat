@@ -34,7 +34,7 @@ module.exports = {
     input.on('keypress', (e) => {
       if(e.which == 13){
         var newName = input.val().replace(new RegExp('#', 'g'), '').trim()
-        new Channel(beforeText).edit(newName)
+        new Channel(beforeText).editName(clickedElement, newName)
       }
     })
   },

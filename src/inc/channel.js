@@ -20,10 +20,15 @@ module.exports = class Channel{
     vars.socket.emit('joinChannel', this)
   }
 
-  edit(newName){
+  editName(element, newName){
     var channelName = this.name
     this.name = newName
-    vars.socket.emit('editChannel', {toEdit: channelName, newChannel: this})
+    if(channelName === newName){
+      element.html('')
+      element.text(element.attr('beforeText'))
+    }else{
+      vars.socket.emit('editChannel', {toEdit: channelName, newChannel: this})
+    }
   }
 
   toHTML(){

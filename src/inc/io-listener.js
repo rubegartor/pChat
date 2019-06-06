@@ -71,15 +71,23 @@ module.exports = () => {
   })
 
   vars.socket.on('editChannelResponse', (newChannel) => {
-    $('#chnl-panel > li').each(function() {
-      if($(this)[0].hasAttribute('beforeText')){
-        if($(this).attr('beforeText') == newChannel.toEdit){
-          $(this).attr('beforeText', newChannel.newChannel.name)
-          $(this).html('')
-          $(this).text(newChannel.newChannel.name)
+    if(newChannel.status == 'ok'){
+      var activeChn = $('#chnl-panel > li.active-channel').attr('beforeText')
+      $('#chnl-panel > li').each(function() {
+        if($(this)[0].hasAttribute('beforeText')){
+          if($(this).attr('beforeText') == newChannel.toEdit){
+            if($(this).attr('beforeText') == activeChn){
+              $('#chnl-hr').attr('data-content', newChannel.newChannel.name)
+            }
+            $(this).attr('beforeText', newChannel.newChannel.name)
+            $(this).html('')
+            $(this).text(newChannel.newChannel.name)
+          }
         }
-      }
-    })
+      })
+    }else{
+      funcs.addAlert('El canal ya existe', 'alert-yellow')
+    }
   })
 
   vars.socket.on('createChannelResponse', function(resp){
@@ -115,6 +123,14 @@ module.exports = () => {
     var message = new Message(msg.id, msg.user_id, msg.username, datetime, msg.channel, msg.content)
     if(msg.image != null){
       message.image = msg.image
+    }
+
+    var mentions = msg.content.match(/\B\@([\w\-]+)/gim)
+
+    if(mentions != null){
+      if(mentions.includes('@' + vars.me.username)){
+        funcs.createNotification('@' + msg.username + ' te ha mencionado', msg.content, 'green', 'file:///images/checkmark_24.png')
+      }
     }
 
     if($('#chat-messages > div').length == 0){

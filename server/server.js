@@ -181,10 +181,18 @@ io.on('connection', (client) => {
   })
 
   client.on('editChannel', (data) => {
-    data.toEdit = '#' + data.toEdit
-    data.newChannel.name = '#' + data.newChannel.name
-    Channel.updateOne({name: data.toEdit}, {$set: {'name': data.newChannel.name}}).exec(() => {
-      io.emit('editChannelResponse', data)
+    Channel.findOne({name: '#' + data.newChannel.name}).exec((err, item) => {
+      if(item == null){
+        data.status = 'ok'
+        data.toEdit = '#' + data.toEdit
+        data.newChannel.name = '#' + data.newChannel.name
+      }else{
+        data.status = 'err'
+      }
+
+      Channel.updateOne({name: data.toEdit}, {$set: {'name': data.newChannel.name}}).exec(() => {
+        io.emit('editChannelResponse', data)
+      })
     })
   })
 
