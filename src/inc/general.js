@@ -214,6 +214,32 @@ module.exports = {
         }
       }
     }
+  },
+
+  imageUrlToB64: (imgUrl, callback) => {
+    var img = new Image()
+    img.onload = () => {
+      var canvas = document.createElement('canvas')
+      canvas.width = img.width
+      canvas.height = img.height
+      var ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      var dataURL = canvas.toDataURL('image/png'),
+        dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/, '')
+
+      callback(dataURL)
+    }
+
+    img.setAttribute('crossOrigin', 'anonymous')
+    img.src = imgUrl
+  },
+
+  showFullImage: (img) => {
+    var new_img = $('<img>').attr('src', img).addClass('main-image');
+    $('.image-bg').on('click', function(){ $(this).hide() });
+    $('#main-image > div').html('');
+    $('#main-image > div').append(new_img);
+    $('#main-image').show();
   }
 }
 

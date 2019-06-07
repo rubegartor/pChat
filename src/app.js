@@ -160,42 +160,6 @@ $(document).ready(function(){
     $('#searchPanel').toggle('slide', {direction: 'right'}, 200)
   })
 
-  $(window).on('dragover', (e) => {
-    e.stopPropagation()
-    e.preventDefault()
-    return true
-  })
-
-  $(window).on('drop', (e) =>{
-    e.preventDefault()
-    e.stopPropagation()
-
-    for(let f of e.originalEvent.dataTransfer.files) {
-      var type = f.type.split('/')
-      if(vars.socket.connected && type[0] == 'image'){
-        var b64 = funcs.base64Encode(f.path)
-        var buff = Buffer.from(b64, 'base64')
-
-        jimp.read(buff).then((img) => {
-          if(img.bitmap.width > 0 && img.bitmap.height > 0){
-            var time = +new Date
-            var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
-            message.image = b64
-            message.send()
-          }else{
-            funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
-          }
-        }).catch(() => {
-          funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
-        })
-      }else{
-        //Otros tipos de archivo
-      }
-    }
-
-    return false
-  })
-
   $('#mainInput').on('keydown', function(event) {
     if (event.keyCode === $.ui.keyCode.TAB) {
       event.preventDefault()
@@ -232,6 +196,74 @@ $(document).ready(function(){
         funcs.setCaretPosition(this, prependStr.length + ui.item.value.length + 1)
       }    
       return false
+    }
+  })
+
+  $(window).on('dragover', (e) => {
+    e.stopPropagation()
+    e.preventDefault()
+    return true
+  })
+
+  document.body.ondrop = (ev) => {
+    ev.preventDefault()
+    const imageUrl = ev.dataTransfer.getData('url')
+    funcs.imageUrlToB64(imageUrl, function(b64){
+      var time = +new Date
+      var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+      message.image = b64
+      message.send()
+    })
+  }
+
+  $(window).on('drop', (e) =>{
+    e.preventDefault()
+    e.stopPropagation()
+
+    for(let f of e.originalEvent.dataTransfer.files) {
+      var type = f.type.split('/')
+      if(vars.socket.connected && type[0] == 'image'){
+        var b64 = funcs.base64Encode(f.path)
+        var buff = Buffer.from(b64, 'base64')
+
+        jimp.read(buff).then((img) => {
+          if(img.bitmap.width > 0 && img.bitmap.height > 0){
+            var time = +new Date
+            var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+            message.image = b64
+            message.send()
+          }else{
+            funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
+          }
+        }).catch(() => {
+          funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
+        })
+      }else{
+        //Otros tipos de archivo
+      }
+    }
+
+    return false
+  })
+
+  $(window).on('paste', (e) => {
+    var items = (event.clipboardData  || event.originalEvent.clipboardData).items
+    var blob = null
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') === 0) {
+        blob = items[i].getAsFile()
+      }
+    }
+
+    if(blob != null){
+      var reader = new FileReader()
+      reader.onload = function(event) {
+        var time = +new Date
+            var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+            message.image = event.target.result.substring(22, event.target.result.length)
+            message.send()
+      }
+      reader.readAsDataURL(blob)
     }
   })
 

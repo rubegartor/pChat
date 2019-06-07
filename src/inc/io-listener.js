@@ -203,10 +203,10 @@ module.exports = () => {
         switch(user.status.main) {
           case 'online':
             statusColor = 'green'
-            break;
+            break
           case 'absent':
             statusColor = 'yellow'
-            break;
+            break
         } 
       }else{
         statusColor = 'red'
