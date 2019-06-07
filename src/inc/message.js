@@ -46,6 +46,11 @@ module.exports = class Message{
       image.on('load', () => {
         funcs.scroll()
       })
+
+      image.on('click', function(){
+        funcs.showFullImage($(this).attr('src'));
+      })
+
       message.append(imageContainer)
     }else{
       message.append(line)
@@ -64,6 +69,11 @@ module.exports = class Message{
       image.on('load', () => {
         funcs.scroll()
       })
+
+      image.on('click', function(){
+        funcs.showFullImage($(this).attr('src'));
+      })
+
       toRet = imageContainer
     }else{
       this.content = this.content.replace(/\B\@([\w\-]+)/gim, function(match){

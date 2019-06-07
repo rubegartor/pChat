@@ -894,3 +894,29 @@ input:checked + .slider:before {
   color: var(--switch);
   user-select: text;
 }
+
+.image-bg{
+  position: absolute;
+  background: rgba(0,0,0,0.6);
+  width: calc(100% - 250px);
+  height: calc(100% - 26px);
+  top: 60px; left: 250px; bottom: 0; right: 0;
+  z-index: 100;
+  margin: auto;
+  overflow: auto;
+}
+
+.main-image{
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+  left: 0;
+  right: 0;
+  top: 35px;
+  bottom: 25px;
+  margin: auto;
+}
+
+.main-image img{
+  border-radius: 3px;
+}
