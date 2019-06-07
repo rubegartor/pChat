@@ -804,12 +804,12 @@ input:checked + .slider:before {
 
 .imageMsg{
   display: block;
-  max-width: 300px;
-  max-height: 400px;
+  max-width: 100%;
+  max-height: 500px;
   height: auto;
   cursor: pointer;
   border-radius: 3px;
-  margin: 10px 0px;
+  margin: 5px 0px;
   -webkit-user-drag: none;
 }
 
@@ -891,6 +891,7 @@ input:checked + .slider:before {
 }
 
 .mention{
+  font-weight: 500;
   color: var(--switch);
   user-select: text;
 }
@@ -899,8 +900,8 @@ input:checked + .slider:before {
   position: absolute;
   background: rgba(0,0,0,0.6);
   width: calc(100% - 250px);
-  height: calc(100% - 26px);
-  top: 60px; left: 250px; bottom: 0; right: 0;
+  height: calc(100vh - 41px);
+  top: 40px; left: 250px; bottom: 0; right: 0;
   z-index: 100;
   margin: auto;
   overflow: auto;
@@ -912,7 +913,7 @@ input:checked + .slider:before {
   max-height: 100%;
   left: 0;
   right: 0;
-  top: 35px;
+  top: 25px;
   bottom: 25px;
   margin: auto;
 }
