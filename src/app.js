@@ -160,7 +160,7 @@ $(document).ready(function(){
     $('#searchPanel').toggle('slide', {direction: 'right'}, 200)
   })
 
-  $('#mainInput').on('keydown', function(event) {
+  $('#mainInput').on('keydown', (event) => {
     if (event.keyCode === $.ui.keyCode.TAB) {
       event.preventDefault()
     }
@@ -246,7 +246,7 @@ $(document).ready(function(){
     return false
   })
 
-  $(window).on('paste', (e) => {
+  $(window).on('paste', (event) => {
     var items = (event.clipboardData  || event.originalEvent.clipboardData).items
     var blob = null
     for (var i = 0; i < items.length; i++) {
