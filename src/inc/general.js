@@ -235,11 +235,11 @@ module.exports = {
   },
 
   showFullImage: (img) => {
-    var new_img = $('<img>').attr('src', img).addClass('main-image');
-    $('.image-bg').on('click', function(){ $(this).hide() });
-    $('#main-image > div').html('');
-    $('#main-image > div').append(new_img);
-    $('#main-image').show();
+    var new_img = $('<img>').attr('src', img).addClass('main-image')
+    $('.image-bg').on('click', function(){ $(this).hide() })
+    $('#main-image > div').html('')
+    $('#main-image > div').append(new_img)
+    $('#main-image').show()
   }
 }
 
