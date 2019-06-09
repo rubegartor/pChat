@@ -138,9 +138,9 @@ module.exports = {
     }
     var window = remote.getCurrentWindow()
     win = new remote.BrowserWindow({
-      width: (display.bounds.width * 0.25),
+      width: (display.bounds.width * 0.20),
       height: 100,
-      x: (display.bounds.width - (display.bounds.width * 0.25)) - 10,
+      x: (display.bounds.width - (display.bounds.width * 0.20)) - 10,
       y: (display.bounds.height - 100) - 50,
       frame: false,
       transparent: true,
