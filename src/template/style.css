@@ -734,9 +734,68 @@ a:active{
   top: 40px;
   left: 250px;
   background-color: var(--body);
-  width: calc(100% - 280px);
-  height: calc(100vh - 70px);
-  padding: 15px;
+  width: calc(100% - 250px);
+  height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.configPanel .row{
+  display: table;
+  width: 100%;
+}
+
+.configPanel .separator{
+  background-color: var(--message-bg);
+  width: calc(100% - 30px);
+  height: 2px;
+  margin: 5px 15px;
+}
+
+.configPanel .row .left{
+  display: inline-block;
+  display: table-cell;
+  width: 35%;
+  height: 100%;
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.configPanel .row .left .title{
+  font-size: 1.05em;
+  font-weight: bold;
+  margin-left: 15px;
+}
+
+.configPanel .row .left .description{
+  font-size: 0.8em;
+  opacity: 0.6;
+  margin-top: 5px;
+  margin-left: 15px;
+}
+
+.configPanel .row .right{
+  display: inline-block;
+  display: table-cell;
+  width: 65%;
+  height: 100%;
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.configInput{
+  background-color: var(--input);
+  width: calc(100% - 24px);
+  height: 35px;
+  outline: 0;
+  border: 0;
+  border-radius: 5px;
+  padding: 0px 12px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+.configInput::placeholder{
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .switch {
@@ -744,7 +803,7 @@ a:active{
   display: inline-block;
   width: 48px;
   height: 28px;
-  margin-top: -2px;
+  margin-top: -12px;
   margin-left: 10px;
   margin-right: 10px;
   margin-bottom: 10px;
@@ -805,7 +864,7 @@ input:checked + .slider:before {
 .imageMsg{
   display: block;
   max-width: 100%;
-  max-height: 500px;
+  max-height: 300px;
   height: auto;
   cursor: pointer;
   border-radius: 3px;
