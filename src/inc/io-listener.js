@@ -23,10 +23,13 @@ module.exports = () => {
       user.user_id = vars.socket.id
       user.password = null
       user.status = response.user_status
+      response.roles.forEach((role) => {
+        user.roles.push(role)
+      })
 
       vars.me = user
       
-      vars.socket.emit('getChannels')
+      vars.socket.emit('getChannels', vars.me)
       vars.socket.emit('getUsersOnline')
 
       $('#mainInput').css('display', 'block')
@@ -48,6 +51,7 @@ module.exports = () => {
    channels = channels.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0)) //Se ordenan los objetos segun su posicion
     channels.forEach(channel => {
       var chn = new Channel(channel.name)
+      chn.permissions = channel.permissions
       $('#chnl-panel').append(chn.toHTML())
     })
 

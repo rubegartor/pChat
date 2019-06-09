@@ -5,6 +5,7 @@ module.exports = class Channel{
   constructor(name){
     this.name = name
     this.position = 0
+    this.permissions = []
   }
 
   create(chnPos){
@@ -32,6 +33,6 @@ module.exports = class Channel{
   }
 
   toHTML(){
-    return $('<li>').text(this.name).attr('beforeText', this.name)
+    return $('<li>').text(this.name).attr({'beforeText': this.name, 'permissions': this.permissions.join(',')})
   }
 }

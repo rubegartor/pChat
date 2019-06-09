@@ -7,6 +7,15 @@ module.exports = class User{
     this.username = username
     this.password = null
     this.status = 'offline'
+    this.roles = []
+  }
+
+  setRole(name){
+    if(!this.roles.includes(name)){
+      this.roles.push(name)
+    }
+
+    vars.socket.emit('updateRole', this)
   }
 
   login(options){

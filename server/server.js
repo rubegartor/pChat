@@ -29,7 +29,8 @@ let channelSchema = mongoose.Schema({
   messages: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Messages'
-  }]
+  }],
+  permissions: Array
 })
 
 let messagesSchema = mongoose.Schema({
@@ -50,7 +51,8 @@ let usersSchema = mongoose.Schema({
   user_id: String, 
   username: String,
   password: String,
-  status: Object
+  status: Object,
+  roles: Array
 })
 
 let Channel = mongoose.model('Channels', channelSchema)
@@ -75,7 +77,7 @@ io.on('connection', (client) => {
           if(res){
             User.findOne({username: creds.username}).exec((err, user) => {
               User.updateOne({username: creds.username}, {$set: {'user_id': client.id}, 'status.main': 'online'}).exec(() => {
-                io.to(client.id).emit('loginRequestResponse', {'status': 'ok', 'username': creds.username, 'user_status': user.status})
+                io.to(client.id).emit('loginRequestResponse', {'status': 'ok', 'username': creds.username, 'user_status': user.status, 'roles': user.roles})
               })
             })
           }else{
@@ -88,8 +90,8 @@ io.on('connection', (client) => {
     })
   })
 
-  client.on('getChannels', () => {
-    Channel.find().exec((err, channels) => {
+  client.on('getChannels', (user) => {
+    Channel.find({permissions: {$in: user.roles}}).exec((err, channels) => {
       io.to(client.id).emit('setChannels', channels)
     })
   })
@@ -203,6 +205,14 @@ io.on('connection', (client) => {
   client.on('updateUsernameStatus', (user) => {
     User.updateOne({user_id: client.id}, {$set: {'status': user.status}}).exec(() => {
       getUsersOnline()
+    })
+  })
+
+  client.on('updateRole', (user) => {
+    User.updateOne({user_id: client.id}, {$push: {'roles': user.roles}}).exec(() => {
+      Channel.find({permissions: {$in: user.roles}}).exec((err, channels) => {
+        io.to(client.id).emit('setChannels', channels)
+      })
     })
   })
 
