@@ -1,5 +1,6 @@
 const io = require('socket.io-client')
 const vars = require('./vars')
+const Role = require('./role')
 
 module.exports = class User{
   constructor(username){
@@ -10,12 +11,12 @@ module.exports = class User{
     this.roles = []
   }
 
-  setRole(name){
-    if(!this.roles.includes(name)){
-      this.roles.push(name)
-    }
+  addRole(name){
+    vars.socket.emit('addRole', {user: vars.me, role: new Role(name)})
+  }
 
-    vars.socket.emit('updateRole', this)
+  removeRole(name){
+    vars.socket.emit('removeRole', {user: vars.me, role: new Role(name)})
   }
 
   login(options){

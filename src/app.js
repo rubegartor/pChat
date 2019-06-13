@@ -16,19 +16,6 @@ let absentTimeout = null
 $(document).ready(function(){
   funcs.createContextMenus()
 
-  $('#chnl-panel').sortable({
-    placeholder: 'channel-placeholder',
-    update: function() {
-      var final = []
-      $('#chnl-panel > li').each(function() {
-        final.push({chnName: $(this).text(), pos: $(this).index()})
-      })
-      funcs.updateChannelIndex(final)
-    }
-  })
-
-  $('#chnl-panel').disableSelection()
-
   $('#close-btn').on('click', () => {
     if(vars.activeNotification != null){
       try{
@@ -59,7 +46,7 @@ $(document).ready(function(){
       $(this).addClass('active-channel')
       $('#chnl-hr').attr('data-content', $(this).text())
       new Channel($(this).text()).join()
-      funcs.loadChannelMessages()
+      funcs.loadActiveChannelMessages()
     }
   })
 

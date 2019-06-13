@@ -14,12 +14,15 @@ const striptags = require('striptags')
 const window = (new JSDOM('')).window
 const DOMPurify = createDOMPurify(window)
 
+const ObjectId = mongoose.Types.ObjectId; 
+
 mongoose.connect(config.dbURL, {useNewUrlParser: true}) 
 mongoose.Promise = global.Promise
 let db = mongoose.connection
 
 db.on('error', () => {
   console.log('[ERROR] Cannot connect to MongoDB server')
+  process.exit(1)
 })
 
 let channelSchema = mongoose.Schema({
@@ -30,7 +33,10 @@ let channelSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Messages'
   }],
-  permissions: Array
+  permissions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Roles'
+  }]
 })
 
 let messagesSchema = mongoose.Schema({
@@ -52,12 +58,22 @@ let usersSchema = mongoose.Schema({
   username: String,
   password: String,
   status: Object,
-  roles: Array
+  roles: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Roles'
+  }]
+})
+
+let rolesSchema = mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId,
+  name: String,
+  permissions: Object
 })
 
 let Channel = mongoose.model('Channels', channelSchema)
 let Message = mongoose.model('Messages', messagesSchema)
 let User = mongoose.model('Users', usersSchema)
+let Role = mongoose.model('Roles', rolesSchema)
 
 User.updateMany({status: 'online'}, {$set: {status: 'offline'}}).exec() //Set all offline clients to online on server startup
 
@@ -75,7 +91,7 @@ io.on('connection', (client) => {
       if(user != null){
         bcrypt.compare(creds.password, user.password).then((res) => {
           if(res){
-            User.findOne({username: creds.username}).exec((err, user) => {
+            User.findOne({username: creds.username}).populate({path: 'roles'}).exec((err, user) => {
               User.updateOne({username: creds.username}, {$set: {'user_id': client.id}, 'status.main': 'online'}).exec(() => {
                 io.to(client.id).emit('loginRequestResponse', {'status': 'ok', 'username': creds.username, 'user_status': user.status, 'roles': user.roles})
               })
@@ -90,10 +106,12 @@ io.on('connection', (client) => {
     })
   })
 
-  client.on('getChannels', (user) => {
-    Channel.find({permissions: {$in: user.roles}}).exec((err, channels) => {
-      io.to(client.id).emit('setChannels', channels)
-    })
+  client.on('getChannels', () => {
+    User.findOne({'user_id': client.id}).exec((err, user) => {
+      Channel.find({permissions: {$in: user.roles}}).exec((err, channels) => {
+        io.to(client.id).emit('setChannels', channels)
+      })
+    })   
   })
 
   client.on('joinChannel', (channel) => {
@@ -172,16 +190,6 @@ io.on('connection', (client) => {
     io.emit('removeChannelResponse', channel)
   })
 
-  client.on('updateChannelIndex', (channels) => {
-    channels.forEach(function(chn) {
-      Channel.updateOne({name: chn.chnName}, {$set: {position: chn.pos}}).exec()
-    })
-
-    Channel.find().exec((err, item) => {
-      io.emit('updateChannels', item)
-    })
-  })
-
   client.on('editChannel', (data) => {
     Channel.findOne({name: '#' + data.newChannel.name}).exec((err, item) => {
       if(item == null){
@@ -208,11 +216,27 @@ io.on('connection', (client) => {
     })
   })
 
-  client.on('updateRole', (user) => {
-    User.updateOne({user_id: client.id}, {$push: {'roles': user.roles}}).exec(() => {
-      Channel.find({permissions: {$in: user.roles}}).exec((err, channels) => {
-        io.to(client.id).emit('setChannels', channels)
-      })
+  client.on('addRole', (data) => {
+    Role.findOne({name: data.role.name}).exec((err, rl) => {
+      if(rl != null){
+        User.findOne({'user_id': data.user.user_id}).exec((err, userRoleData) => {
+          if(!userRoleData.roles.includes(rl._id)){ //Se comprueba si el usuario ya tiene el rol para no duplicarlo
+            User.updateOne({'user_id': data.user.user_id}, {$push: {roles: rl._id}}).exec(() => {
+              io.to(data.user.user_id).emit('updateRoles', {action: 'add', role: rl})
+            })
+          }
+        })
+      }
+    })
+  })
+
+  client.on('removeRole', (data) => {
+    Role.findOne({name: data.role.name}).exec((err, rl) => {
+      if(rl != null){
+        User.updateOne({'user_id': data.user.user_id}, {$pull: {'roles': rl._id }}).exec(() => {
+          io.to(data.user.user_id).emit('updateRoles', {action: 'remove', role: rl})
+        })
+      }
     })
   })
 

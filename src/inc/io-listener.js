@@ -1,3 +1,5 @@
+const Role = require('./role.js')
+
 module.exports = () => {
   vars.socket.on('disconnect', () => {
     $('#mainInput').css('display', 'none')
@@ -24,12 +26,19 @@ module.exports = () => {
       user.password = null
       user.status = response.user_status
       response.roles.forEach((role) => {
-        user.roles.push(role)
+        var roleObj = new Role(role.name)
+        roleObj._id = role._id
+        if(role.permissions === undefined){
+          roleObj.perm = []
+        }else{
+          roleObj.perm = role.permissions
+        }  
+        user.roles.push(roleObj)
       })
 
       vars.me = user
       
-      vars.socket.emit('getChannels', vars.me)
+      vars.socket.emit('getChannels')
       vars.socket.emit('getUsersOnline')
 
       $('#mainInput').css('display', 'block')
@@ -56,22 +65,6 @@ module.exports = () => {
     })
 
     funcs.selectFirstChannel()
-  })
-
-  vars.socket.on('updateChannels', (channels) => {
-    var activeChn = $('#chnl-panel > li.active-channel').text()
-    $('#chnl-panel').html('')
-    channels = channels.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0)) //Se ordenan los objetos segun su posicion
-      channels.forEach(channel => {
-        var chn = new Channel(channel.name)
-        $('#chnl-panel').append(chn.toHTML())
-    })
-
-    $('#chnl-panel > li').each(function() {
-      if($(this).text() == activeChn){
-        $(this).addClass('active-channel')
-      }
-    })
   })
 
   vars.socket.on('editChannelResponse', (newChannel) => {
@@ -133,7 +126,9 @@ module.exports = () => {
 
     if(mentions != null){
       if(mentions.includes('@' + vars.me.username)){
-        funcs.createNotification('@' + msg.username + ' te ha mencionado', msg.content, 'green', 'file:///images/checkmark_24.png')
+        if(vars.me.status.notif){
+          funcs.createNotification('@' + msg.username + ' te ha mencionado', msg.content, 'green', 'file:///images/checkmark_24.png')
+        }
       }
     }
 
@@ -219,5 +214,28 @@ module.exports = () => {
       vars.users = finalUsers
       $('#usrs-panel').append('<li><div class="status ' + statusColor + '"></div>' + user.username + '</li>')
     })
+  })
+
+  vars.socket.on('updateRoles', (data) => {
+    vars.socket.emit('getChannels')
+
+    var roleObj = new Role(data.role.name)
+    roleObj._id = data.role._id
+    if(data.role.permissions === undefined){
+      roleObj.perm = []
+    }else{
+      roleObj.perm = data.role.permissions
+    }
+
+    if(data.action == 'add'){
+      vars.me.roles.push(roleObj)
+    }else{
+      for(var i = 0; i < vars.me.roles.length; i++){
+        if(vars.me.roles[i]._id == roleObj._id){
+          vars.me.roles.splice(i, 1)
+          break
+        }
+      }
+    }
   })
 }

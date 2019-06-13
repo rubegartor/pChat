@@ -104,7 +104,7 @@ module.exports = {
     this.addContextMenu($('#chatBottom'), '#mainInput', mainInputContextMenuOptions, mainInputContextMenuFuncs)
   },
 
-  loadChannelMessages: function() {
+  loadActiveChannelMessages: function() {
     $('#chat-messages').html('')
     vars.socket.emit('getChannelMessages', this.getActiveChannel())
   },
@@ -174,10 +174,6 @@ module.exports = {
     }, 2000)
   },
 
-  updateChannelIndex: (obj) => {
-    vars.socket.emit('updateChannelIndex', obj)
-  },
-
   loadUserConfig: () => {
     if(vars.me.status.notif == true){
       $('#notifBtn').attr('src', 'file:///images/notif2_20.png')
@@ -234,9 +230,13 @@ module.exports = {
     img.src = imgUrl
   },
 
-  showFullImage: (img) => {
+  showFullImage: function(img){
+    $('#chnl-hr').attr('data-content', '')
     var new_img = $('<img>').attr('src', img).addClass('main-image')
-    $('.image-bg').on('click', function(){ $(this).hide() })
+    $('.image-bg').on('click', function(){
+      $(this).hide()
+      $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+    })
     $('#main-image > div').html('')
     $('#main-image > div').append(new_img)
     $('#main-image').show()
