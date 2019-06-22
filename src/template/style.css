@@ -11,11 +11,14 @@
   --blue-hover: #2980b9;
   --green: #1abc9c;
   --green-hover: #16a085;
+  --red: #e74c3c;
+  --red-hover: #c0392b;
   --scroll: #2a3035;
   --scrollbar: #434b53;
   --separator: #2a2f34;
   --input: #40484F;
   --switch: #e67e22;
+  --subtitle: #788794;
 }
 
 *{
@@ -979,4 +982,103 @@ input:checked + .slider:before {
 
 .main-image img{
   border-radius: 3px;
+}
+
+.modal-createChannel{
+  position: absolute;
+  background: rgba(0,0,0,0.6);
+  width: 100%;
+  height: 100vh;
+  top: 0; left: 0; bottom: 0; right: 0;
+  z-index: 100;
+  overflow: auto;
+  display: table;
+}
+
+.modal-createChannel .body{
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  transform: translateY(-50%);
+  background-color: var(--body);
+  width: 450px;
+  border-radius: 5px;
+}
+
+.modal-createChannel .body .title{
+  font-size: 1.05em;
+  font-weight: bold;
+  margin-bottom: 15px;
+  padding: 15px 15px 0px 15px;
+}
+
+.modal-createChannel .body .subTitle{
+  color: var(--subtitle);
+  font-size: 0.90em;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.modal-createChannel .body .content{
+  margin-top: 10px;
+  padding: 0px 15px 15px 15px;
+}
+
+.modal-createChannel .body .btnBox{
+  background-color: var(--sidebar);
+  width: calc(100% - 30px);
+  height: 40px;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  padding: 15px;
+}
+
+.modal-createChannel .body .btnBox .button-green{
+  background-color: var(--green);
+  font-size: 0.95em;
+  border: 0px;
+  border-radius: 5px;
+  height: 40px;
+  padding: 0px 15px;
+  width: auto;
+  color: var(--text-color);
+  outline: 0;
+  cursor: pointer;
+  float: right;
+  font-weight: bolder;
+}
+
+.modal-createChannel .body .btnBox a{
+  position: relative;
+  top: 8px;
+}
+
+.modal-createChannel .body .btnBox .button-green:hover{
+  background-color: var(--green-hover);
+}
+
+.modal-createChannel .body .btnBox .button-red{
+  background-color: var(--red);
+  font-size: 0.95em;
+  border: 0px;
+  border-radius: 5px;
+  height: 40px;
+  padding: 0px 15px;
+  width: auto;
+  color: var(--text-color);
+  outline: 0;
+  cursor: pointer;
+  float: right;
+  margin-right: 10px;
+  font-weight: bolder;
+}
+
+.modal-createChannel .body .btnBox .button-red:hover{
+  background-color: var(--red-hover);
+}
+
+.modal-createChannel .body .btnBox button:active{
+  opacity: .8;
 }
