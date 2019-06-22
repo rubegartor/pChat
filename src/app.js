@@ -63,33 +63,36 @@ $(document).ready(function(){
   })
 
   $('#createChannelBtn').on('click', () => {
-    $('#createChannelBtn').css('display', 'none')
-    var input = $('<input>').addClass('channelInput').attr('placeholder', 'Nuevo canal...')
-    $('#chnl-panel').append(input)
-    input.focus()
+    $('#modal-createChannel').css('display', 'block')
+    $('#chnl-hr').attr('data-content', '')
+    $('#modal-createChannel-nameInput').val('')
+    $('#modal-createChannel-nameInput').focus()
+  })
 
-    var channelContextMenuOptions = [$('<li>').addClass('menu-option').attr('id', 'contextmenu-cancelChannelBtn').text('Cancelar')]
-    var channelContextMenuFuncs = [contextFuncs.cancelCreateChannel]
-    funcs.addContextMenu($('#chnl-panel'), 'input', channelContextMenuOptions, channelContextMenuFuncs)
+  $('#modal-createChannel-okButton').on('click', () => {
+    var channelName = $('#modal-createChannel-nameInput').val().replace(new RegExp('#', 'g'), '').trim()
+    if(channelName.length > 0){
+      var channelPos = $('#chnl-panel > li').length
+      new Channel('#' + channelName).create(channelPos, ['everyone'])
+      $('#modal-createChannel-nameInput').remove()
+      $('#modal-createChannel').css('display', 'none')
+      $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+    }else{
+      funcs.addAlert('Necesitas especificar un nombre válido', 'alert-red')
+      $('#modal-createChannel-nameInput').focus()
+    }
+  })
 
-    input.on('keypress', (e) => {
-      if(e.which == 13){
-        var channelName = input.val().replace(new RegExp('#', 'g'), '').trim()
-        if(channelName.length > 0){
-          var channelPos = $('#chnl-panel > li').length
-          new Channel('#' + channelName).create(channelPos)
-          input.remove()
-          $('#createChannelBtn').css('display', 'block')
-        }
-      }
-    })
+  $('#modal-createChannel-cancelButton').on('click', () => {
+    $('#modal-createChannel').css('display', 'none')
+    $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
   })
 
   $('#mainInput').on('keypress', function(e){
     if(e.which == 13){
       if($(this).val().trim() != ''){
         var time = +new Date
-        var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), $(this).val().trim())
+        var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), $(this).val().trim())
         message.send()
       }
       $(this).val('')
@@ -197,7 +200,7 @@ $(document).ready(function(){
     const imageUrl = ev.dataTransfer.getData('url')
     funcs.imageUrlToB64(imageUrl, function(b64){
       var time = +new Date
-      var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+      var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
       message.image = b64
       message.send()
     })
@@ -216,7 +219,7 @@ $(document).ready(function(){
         jimp.read(buff).then((img) => {
           if(img.bitmap.width > 0 && img.bitmap.height > 0){
             var time = +new Date
-            var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+            var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
             message.image = b64
             message.send()
           }else{
@@ -246,7 +249,7 @@ $(document).ready(function(){
       var reader = new FileReader()
       reader.onload = function(event) {
         var time = +new Date
-            var message = new Message(funcs.sha1((new Date(time).getTime() + vars.socket.id).toString()), vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+            var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
             message.image = event.target.result.substring(22, event.target.result.length)
             message.send()
       }
@@ -255,6 +258,13 @@ $(document).ready(function(){
   })
 
   $(window).on('click', () => {
+    if(vars.me != null){
+      if(vars.me.status.main != 'online'){
+        clearTimeout(absentTimeout)
+        vars.me.status.main = 'online'
+        vars.me.updateStatus()
+      }
+    }
     if(contextMenuVisible) funcs.toggleMenu($('.contextmenu'), 'hide')
   })
 

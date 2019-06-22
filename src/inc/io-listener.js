@@ -57,10 +57,9 @@ module.exports = () => {
 
   vars.socket.on('setChannels', (channels) => {
     $('#chnl-panel').html('')
-   channels = channels.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0)) //Se ordenan los objetos segun su posicion
+    channels = channels.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0)) //Se ordenan los objetos segun su posicion
     channels.forEach(channel => {
       var chn = new Channel(channel.name)
-      chn.permissions = channel.permissions
       $('#chnl-panel').append(chn.toHTML())
     })
 
@@ -117,7 +116,8 @@ module.exports = () => {
 
   vars.socket.on('messageResponse', (msg) => {
     var datetime = new Date(msg.time)
-    var message = new Message(msg.id, msg.user_id, msg.username, datetime, msg.channel, msg.content)
+    var message = new Message(msg.user_id, msg.username, datetime, msg.channel, msg.content)
+    message._id = msg._id
     if(msg.image != null){
       message.image = msg.image
     }
@@ -156,7 +156,8 @@ module.exports = () => {
     resp.messages = resp.messages.reverse()
     resp.messages.forEach((msg) => {
       var datetime = new Date(msg.time)
-      var message = new Message(msg.id, msg.user_id, msg.username, datetime, msg.channel, msg.content)
+      var message = new Message(msg.user_id, msg.username, datetime, msg.channel, msg.content)
+      message._id = msg._id
       if(msg.image != null){
         message.image = msg.image
       }
@@ -175,20 +176,24 @@ module.exports = () => {
     funcs.scroll()
   })
 
-  vars.socket.on('removeMessageResponse', (message) => {
-    var element = $('span[id="' + message.id + '"]')
-    var elementParent = element.parent('div')
-    var elementContainer = elementParent.parent()
-    var elementTime = elementParent.prev()
-    var elementUser = elementTime.prev()
-    var countChildren = elementParent.children().length - 1
-    element.remove()
-  
-    if(countChildren == 0){
-      elementContainer.remove()
-      elementParent.remove()
-      elementTime.remove()
-      elementUser.remove()
+  vars.socket.on('removeMessageResponse', (messageData) => {
+    if(messageData.status == 'ok'){
+      var element = $('span[id="' + messageData.data._id + '"]')
+      var elementParent = element.parent('div')
+      var elementContainer = elementParent.parent()
+      var elementTime = elementParent.prev()
+      var elementUser = elementTime.prev()
+      var countChildren = elementParent.children().length - 1
+      element.remove()
+    
+      if(countChildren == 0){
+        elementContainer.remove()
+        elementParent.remove()
+        elementTime.remove()
+        elementUser.remove()
+      }
+    }else{
+      funcs.addAlert(messageData.message, 'alert-red')
     }
   })
 
@@ -216,26 +221,30 @@ module.exports = () => {
     })
   })
 
-  vars.socket.on('updateRoles', (data) => {
-    vars.socket.emit('getChannels')
+  vars.socket.on('updateRoles', (roleData) => {
+    if(roleData.status == 'ok'){
+      vars.socket.emit('getChannels')
 
-    var roleObj = new Role(data.role.name)
-    roleObj._id = data.role._id
-    if(data.role.permissions === undefined){
-      roleObj.perm = []
-    }else{
-      roleObj.perm = data.role.permissions
-    }
-
-    if(data.action == 'add'){
-      vars.me.roles.push(roleObj)
-    }else{
-      for(var i = 0; i < vars.me.roles.length; i++){
-        if(vars.me.roles[i]._id == roleObj._id){
-          vars.me.roles.splice(i, 1)
-          break
+      var roleObj = new Role(roleData.data.role.name)
+      roleObj._id = roleData.data.role._id
+      if(roleData.data.role.permissions === undefined){
+        roleObj.perm = []
+      }else{
+        roleObj.perm = roleData.data.role.permissions
+      }
+  
+      if(roleData.data.action == 'add'){
+        vars.me.roles.push(roleObj)
+      }else{
+        for(var i = 0; i < vars.me.roles.length; i++){
+          if(vars.me.roles[i]._id == roleObj._id){
+            vars.me.roles.splice(i, 1)
+            break
+          }
         }
       }
+    }else{
+      funcs.addAlert(roleData.message, 'alert-red')
     }
   })
 }

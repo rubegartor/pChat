@@ -24,24 +24,9 @@ module.exports = {
     var username = message.parent().prev().find('span.message-username').text()
     var time = message.parent().prev().find('span.message-time').text()
 
-    if(username != vars.me.username){
-      var removePerm = false
-      vars.me.roles.forEach((role) => {
-        if(role.perm != undefined){
-          if(role.perm.removeMessages){
-            removePerm = true;
-          }
-        }
-      })
-
-      if(removePerm){
-        new Message(id, user_id, username, time, funcs.getActiveChannel(), content).remove()
-      }else{
-        funcs.addAlert('No tienes permiso para eliminar mensajes de otros usuarios', 'alert-red')
-      }
-    }else{
-      new Message(id, user_id, username, time, funcs.getActiveChannel(), content).remove()
-    }
+    var msg = new Message(user_id, username, time, funcs.getActiveChannel(), content)
+    msg._id = id
+    msg.remove()
   },
 
   editChannel: (clickedElement) => {

@@ -226,7 +226,6 @@ module.exports = {
       callback(dataURL)
     }
 
-    img.setAttribute('crossOrigin', 'anonymous')
     img.src = imgUrl
   },
 

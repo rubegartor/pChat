@@ -5,11 +5,12 @@ module.exports = class Channel{
   constructor(name){
     this.name = name
     this.position = 0
-    this.permissions = []
+    this.requiredRoles = []
   }
 
-  create(chnPos){
+  create(chnPos, requiredRoles){
     this.position = chnPos
+    this.requiredRoles = requiredRoles
     vars.socket.emit('createChannel', this)
   }
 
@@ -33,6 +34,6 @@ module.exports = class Channel{
   }
 
   toHTML(){
-    return $('<li>').text(this.name).attr({'beforeText': this.name, 'permissions': this.permissions.join(',')})
+    return $('<li>').text(this.name).attr({'beforeText': this.name})
   }
 }

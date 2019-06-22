@@ -14,8 +14,6 @@ const striptags = require('striptags')
 const window = (new JSDOM('')).window
 const DOMPurify = createDOMPurify(window)
 
-const ObjectId = mongoose.Types.ObjectId; 
-
 mongoose.connect(config.dbURL, {useNewUrlParser: true}) 
 mongoose.Promise = global.Promise
 let db = mongoose.connection
@@ -33,7 +31,7 @@ let channelSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Messages'
   }],
-  permissions: [{
+  requiredRoles: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Roles'
   }]
@@ -41,7 +39,6 @@ let channelSchema = mongoose.Schema({
 
 let messagesSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
-  id: String,
   user_id: String,
   username: String,
   content: String,
@@ -108,7 +105,7 @@ io.on('connection', (client) => {
 
   client.on('getChannels', () => {
     User.findOne({'user_id': client.id}).exec((err, user) => {
-      Channel.find({permissions: {$in: user.roles}}).exec((err, channels) => {
+      Channel.find({requiredRoles: {$in: user.roles}}).exec((err, channels) => {
         io.to(client.id).emit('setChannels', channels)
       })
     })   
@@ -135,7 +132,6 @@ io.on('connection', (client) => {
 
     var msg = new Message({
       _id: new mongoose.mongo.ObjectId(),
-      id: message.id,
       user_id: message.user_id,
       username: message.username,
       content: finalMessage,
@@ -159,26 +155,63 @@ io.on('connection', (client) => {
   })
 
   client.on('removeMessage', (message) => {
-    Message.deleteOne({id: message.id}).exec()
+    User.findOne({'user_id': client.id}).populate({path: 'roles'}).exec((err, user) => {
+      Message.findOne({_id: message._id}).exec((err, msg) => {
+        var removeMessagesPerm = false
 
-    io.emit('removeMessageResponse', message)
+        if(user.username != msg.username){ //Si el mensaje pertenece al usuario que ha solicitado la eliminación del mismo, se eliminará independientemente de sus permisos
+          for(role of user.roles){
+            if(role.permissions.removeMessages){
+              removeMessagesPerm = true
+              break
+            }
+          }
+        }else{
+          removeMessagesPerm = true;
+        }
+  
+        if(removeMessagesPerm){
+          Message.deleteOne({_id: message._id}).exec()
+  
+          io.emit('removeMessageResponse', {'status': 'ok', 'data': message})
+        }else{
+          io.to(client.id).emit('removeMessageResponse', {'status': 'err', 'message': 'No tienes permisos para realizar esta acción'})
+        }
+      })
+    })
   })
 
   client.on('createChannel', (channel) => {
     Channel.findOne({name: channel.name}).exec((err, item) => {
       if(item == null){
-        var chn = new Channel({
-          _id: new mongoose.mongo.ObjectId(),
-          name: channel.name,
-          position: channel.position,
-          messages: []
+        Role.find({name: {$in: channel.requiredRoles}}).exec((err, roles) => {
+          if(roles != null){
+            var rolesIDs = roles.map(function getRoleID(role) {
+              return role._id
+            })
+
+            var chn = new Channel({
+              _id: new mongoose.mongo.ObjectId(),
+              name: channel.name,
+              position: channel.position,
+              messages: [],
+              requiredRoles: rolesIDs
+            })
+        
+            chn.save((err) => {
+              if(err){
+                return console.error(err)
+              }else{
+                //Se envia la creación del canal solo a los usuarios que tengan los roles asignados con los que se ha creado el canal
+                User.find({roles: {$in: rolesIDs}}).exec((err, users) => {
+                  users.forEach((user) => {
+                    io.to(user.user_id).emit('createChannelResponse', {'status': 'ok', 'data': channel})
+                  })
+                })
+              }
+            })
+          }
         })
-    
-        chn.save((err) => {
-          if(err) return console.error(err)
-        })
-    
-        io.emit('createChannelResponse', {'status': 'ok', 'data': channel})
       }else{
         io.emit('createChannelResponse', {'status': 'err', 'msg': 'El canal ya existe'})
       }
@@ -217,25 +250,53 @@ io.on('connection', (client) => {
   })
 
   client.on('addRole', (data) => {
-    Role.findOne({name: data.role.name}).exec((err, rl) => {
-      if(rl != null){
-        User.findOne({'user_id': data.user.user_id}).exec((err, userRoleData) => {
-          if(!userRoleData.roles.includes(rl._id)){ //Se comprueba si el usuario ya tiene el rol para no duplicarlo
-            User.updateOne({'user_id': data.user.user_id}, {$push: {roles: rl._id}}).exec(() => {
-              io.to(data.user.user_id).emit('updateRoles', {action: 'add', role: rl})
+    User.findOne({user_id: client.id}).populate({path: 'roles'}).exec((err, user) => {
+      var updateRolesPerm = false
+      for(role of user.roles){
+        if(role.permissions.updateRoles){
+          updateRolesPerm = true
+          break
+        }
+      }
+
+      if(updateRolesPerm){
+        Role.findOne({name: data.role.name}).exec((err, rl) => {
+          if(rl != null){
+            User.findOne({'user_id': data.user.user_id}).exec((err, userRoleData) => {
+              if(!userRoleData.roles.includes(rl._id)){ //Se comprueba si el usuario ya tiene el rol para no duplicarlo
+                User.updateOne({'user_id': data.user.user_id}, {$push: {roles: rl._id}}).exec(() => {
+                  io.to(data.user.user_id).emit('updateRoles', {'status': 'ok', 'data': {action: 'add', role: rl}})
+                })
+              }
             })
           }
         })
+      }else{
+        io.to(client.id).emit('updateRoles', {'status': 'err', 'message': 'No tienes permisos para realizar esta acción'})
       }
     })
   })
 
   client.on('removeRole', (data) => {
-    Role.findOne({name: data.role.name}).exec((err, rl) => {
-      if(rl != null){
-        User.updateOne({'user_id': data.user.user_id}, {$pull: {'roles': rl._id }}).exec(() => {
-          io.to(data.user.user_id).emit('updateRoles', {action: 'remove', role: rl})
+    User.findOne({user_id: client.id}).populate({path: 'roles'}).exec((err, user) => {
+      var updateRolesPerm = false
+      for(role of user.roles){
+        if(role.permissions.updateRoles){
+          updateRolesPerm = true
+          break
+        }
+      }
+
+      if(updateRolesPerm){
+        Role.findOne({name: data.role.name}).exec((err, rl) => {
+          if(rl != null){
+            User.updateOne({'user_id': data.user.user_id}, {$pull: {'roles': rl._id }}).exec(() => {
+              io.to(data.user.user_id).emit('updateRoles', {'status': 'ok', 'data': {action: 'remove', role: rl}})
+            })
+          }
         })
+      }else{
+        io.to(client.id).emit('updateRoles', {'status': 'err', 'message': 'No tienes permisos para realizar esta acción'})
       }
     })
   })

@@ -2,8 +2,8 @@ const $ = require('jquery')
 var vars = require('./vars')
 
 module.exports = class Message{
-  constructor(id, user_id, username, time, channel, content) {
-    this.id = id
+  constructor(user_id, username, time, channel, content) {
+    this._id = null
     this.user_id = user_id
     this.username = username
     this.content = content
@@ -37,12 +37,12 @@ module.exports = class Message{
     var container =  $('<div>').addClass('message-container')
     var header = $('<div>').addClass('message-header')
     var message = $('<div>').addClass('message')
-    var line = $('<span>').addClass('message-line').html(this.content).attr({user_id: this.user_id, id: this.id, datetime: this.time})
+    var line = $('<span>').addClass('message-line').html(this.content).attr({user_id: this.user_id, id: this._id, datetime: this.time})
     header.append($('<span>').addClass('message-username').text(this.username))
     header.append($('<span>').addClass('message-time').text(time))
     if(this.image != null){
-      var image = $('<img>').attr({id: this.id, src: 'data:image/png;base64,' + this.image}).addClass('imageMsg')
-      var imageContainer = $('<span>').attr({user_id: this.user_id, id: this.id, datetime: this.time}).append(image)
+      var image = $('<img>').attr({id: this._id, src: 'data:image/png;base64,' + this.image}).addClass('imageMsg')
+      var imageContainer = $('<span>').attr({user_id: this.user_id, id: this._id, datetime: this.time}).append(image)
       image.on('load', () => {
         funcs.scroll()
       })
@@ -64,8 +64,8 @@ module.exports = class Message{
   toAppend(){
     var toRet = null
     if(this.image != null){
-      var image = $('<img>').attr({id: this.id, src: 'data:image/png;base64,' + this.image}).addClass('imageMsg')
-      var imageContainer = $('<span>').attr({user_id: this.user_id, id: this.id, datetime: this.time}).append(image)
+      var image = $('<img>').attr({id: this._id, src: 'data:image/png;base64,' + this.image}).addClass('imageMsg')
+      var imageContainer = $('<span>').attr({user_id: this.user_id, id: this._id, datetime: this.time}).append(image)
       image.on('load', () => {
         funcs.scroll()
       })
@@ -79,7 +79,7 @@ module.exports = class Message{
       this.content = this.content.replace(/\B\@([\w\-]+)/gim, function(match){
         return '<span class="mention">' + match + '</span>'
       })
-      toRet = $('<span>').addClass('message-line').html(this.content).attr({user_id: this.user_id, id: this.id})
+      toRet = $('<span>').addClass('message-line').html(this.content).attr({user_id: this.user_id, id: this._id})
     }
 
     funcs.scroll()
