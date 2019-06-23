@@ -6,6 +6,10 @@ const server = require('https').createServer({
 })
 const io = require('socket.io')(server)
 const mongoose = require('mongoose')
+const Channel = require('./models/channel')
+const Message = require('./models/message')
+const Role = require('./models/role')
+const User = require('./models/user')
 const bcrypt = require('bcryptjs')
 const createDOMPurify = require('dompurify')
 const { JSDOM } = require('jsdom')
@@ -22,55 +26,6 @@ db.on('error', () => {
   console.log('[ERROR] Cannot connect to MongoDB server')
   process.exit(1)
 })
-
-let channelSchema = mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
-  name: String,
-  position: Number,
-  messages: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Messages'
-  }],
-  requiredRoles: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Roles'
-  }]
-})
-
-let messagesSchema = mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
-  user_id: String,
-  username: String,
-  content: String,
-  time: Number,
-  channel: String,
-  image: String,
-  file: String,
-  state: Object
-})
-
-let usersSchema = mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
-  user_id: String, 
-  username: String,
-  password: String,
-  status: Object,
-  roles: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Roles'
-  }]
-})
-
-let rolesSchema = mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
-  name: String,
-  permissions: Object
-})
-
-let Channel = mongoose.model('Channels', channelSchema)
-let Message = mongoose.model('Messages', messagesSchema)
-let User = mongoose.model('Users', usersSchema)
-let Role = mongoose.model('Roles', rolesSchema)
 
 User.updateMany({status: 'online'}, {$set: {status: 'offline'}}).exec() //Set all offline clients to online on server startup
 
