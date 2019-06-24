@@ -62,7 +62,7 @@ $(document).ready(function(){
   })
 
   $('#createChannelBtn').on('click', () => {
-    $('#modal-createChannel').css('display', 'block')
+    $('#modal-createChannel').toggle('fade', 200)
     $('#chnl-hr').attr('data-content', '')
     $('#modal-createChannel-nameInput').val('')
     $('#modal-createChannel-nameInput').focus()
@@ -74,8 +74,9 @@ $(document).ready(function(){
       var channelPos = $('#chnl-panel > li').length
       new Channel('#' + channelName).create(channelPos, ['everyone'])
       $('#modal-createChannel-nameInput').remove()
-      $('#modal-createChannel').css('display', 'none')
-      $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+      $('#modal-createChannel').toggle('fade', 200, () => {
+        $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+      })
     }else{
       funcs.addAlert('Necesitas especificar un nombre válido', 'alert-red')
       $('#modal-createChannel-nameInput').focus()
@@ -83,8 +84,9 @@ $(document).ready(function(){
   })
 
   $('#modal-createChannel-cancelButton').on('click', () => {
-    $('#modal-createChannel').css('display', 'none')
-    $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+    $('#modal-createChannel').toggle('fade', 200, () => {
+      $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+    })
   })
 
   $('#mainInput').on('keypress', function(e){
@@ -228,7 +230,7 @@ $(document).ready(function(){
           funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
         })
       }else{
-        //Otros tipos de archivo
+        //TODO: Otros tipos de archivo
       }
     }
 
@@ -248,9 +250,9 @@ $(document).ready(function(){
       var reader = new FileReader()
       reader.onload = function(event) {
         var time = +new Date
-            var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
-            message.image = event.target.result.substring(22, event.target.result.length)
-            message.send()
+        var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+        message.image = event.target.result.substring(22, event.target.result.length)
+        message.send()
       }
       reader.readAsDataURL(blob)
     }
