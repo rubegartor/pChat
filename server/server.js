@@ -103,9 +103,8 @@ io.on('connection', (client) => {
 
     Channel.updateOne({name: message.channel}, {$push: {messages: msg._id}}).exec()
 
-    if((finalMessage.trim().length > 0 && haveText > 0) || message.image != null){
-      message.content = finalMessage
-      io.in(message.channel).emit('messageResponse', message)
+    if((finalMessage.trim().length > 0 && haveText > 0) || msg.image != null){
+      io.in(msg.channel).emit('messageResponse', msg)
     }
   })
 
