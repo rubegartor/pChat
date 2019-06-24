@@ -8,7 +8,6 @@ const funcs = require('../inc/general')
 const Message = require('../inc/message')
 const Channel = require('../inc/channel')
 const User = require('../inc/user')
-const contextFuncs = require('../inc/contextFuncs')
 
 let contextMenuVisible = false
 let absentTimeout = null
