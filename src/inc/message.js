@@ -48,7 +48,7 @@ module.exports = class Message{
       })
 
       image.on('click', function(){
-        funcs.showFullImage($(this).attr('src'));
+        funcs.showFullImage($(this).attr('src'))
       })
 
       message.append(imageContainer)
@@ -71,7 +71,7 @@ module.exports = class Message{
       })
 
       image.on('click', function(){
-        funcs.showFullImage($(this).attr('src'));
+        funcs.showFullImage($(this).attr('src'))
       })
 
       toRet = imageContainer
