@@ -373,10 +373,6 @@ a:active{
   line-height: 1.5em;
 }
 
-.hr-text-config:after {
-  content: 'Configuración';
-}
-
 .contextmenu {
   position: absolute;
   background-color: #191c1f;
@@ -889,6 +885,14 @@ input:checked + .slider:before {
   right: 10px;
   border-radius: 5px;
   padding: 10px;
+  z-index: 1;
+}
+
+.searchTextBg .subTitle{
+  color: var(--subtitle);
+  font-size: 0.90em;
+  font-weight: bold;
+  margin: 10px 0px;
 }
 
 .searchTextBg .searchInput{
@@ -1081,4 +1085,23 @@ input:checked + .slider:before {
 
 .modal-createChannel .body .btnBox button:active{
   opacity: .8;
+}
+
+.searchedMessages{
+  max-height: 350px;
+  overflow-y: scroll;
+}
+
+.searchedMessages li{
+  background-color: var(--message-bg);
+  width: calc(100% - 25px);
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin: 5px 5px 0px 0px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.searchedMessages li:hover{
+  text-decoration: underline;
 }
