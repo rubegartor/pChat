@@ -40,12 +40,14 @@ $(document).ready(function(){
 
   $('#chnl-panel').on('click', 'li', function(){
     if($(this).children('input').length == 0){
-      $('#chnl-panel > li').removeClass('active-channel')
-      $('#mainInput').prop('disabled', false)
-      $(this).addClass('active-channel')
-      $('#chnl-hr').attr('data-content', $(this).text())
-      new Channel($(this).text()).join()
-      funcs.loadActiveChannelMessages()
+      if($(this).text() != funcs.getActiveChannel()){
+        $('#chnl-panel > li').removeClass('active-channel')
+        $('#mainInput').prop('disabled', false)
+        $(this).addClass('active-channel')
+        $('#chnl-hr').attr('data-content', $(this).text())
+        new Channel($(this).text()).join()
+        funcs.loadActiveChannelMessages()
+      }
     }
   })
 
@@ -140,15 +142,31 @@ $(document).ready(function(){
   $('#cogBtn').on('click', () => {
     $('#configPanel').toggle('slide', {direction: 'down'}, 300)
 
-    if($('#chatTop > hr').hasClass('hr-text-config')){
-      $('#chatTop > hr').removeClass('hr-text-config')
+    if(!$('#chnl-hr').attr('data-content').startsWith('#')){
+      $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
     }else{
-      $('#chatTop > hr').addClass('hr-text-config')
+      $('#chnl-hr').attr('data-content', 'Configuración')
     }
   })
 
   $('#searchBtn').on('click', () => {
-    $('#searchPanel').toggle('slide', {direction: 'right'}, 200)
+    $('#searchInput').val('')
+    $('#searchPanel').toggle('slide', {direction: 'right'}, 200, () => {
+      $('#searchedMessages').html('')
+      $('#foundMessagesSubTitle').css('display', 'none')
+      $('#searchInput').focus()
+    })
+  })
+
+  $('#searchInput').on('keypress', function(e){
+    if(e.which == 13){
+      vars.socket.emit('searchMessages', {user: vars.me, message: $(this).val().trim(), channel: funcs.getActiveChannel()})
+    }
+  })
+
+  $('#searchInput').on('input', () => {
+    $('#searchedMessages').html('')
+    $('#foundMessagesSubTitle').css('display', 'none')
   })
 
   $('#mainInput').on('keydown', (event) => {
