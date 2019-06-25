@@ -9,6 +9,9 @@ module.exports = () => {
     $('#chatTop').css('width', 'calc(100% - 120px)')
     $('#loginBg').css('display', 'block')
     $('#chnl-hr').attr('data-content', '')
+    $('#searchPanel').css('display', 'none')
+    $('#configPanel').css('display', 'none')
+    $('#modal-createChannel').css('display', 'none')
 
     try{
       vars.socket.disconnect()
@@ -245,6 +248,48 @@ module.exports = () => {
       }
     }else{
       funcs.addAlert(roleData.message, 'alert-red')
+    }
+  })
+
+  vars.socket.on('searchMessagesResponse', (messages) => {
+    $('#searchedMessages').html('')
+    $('#foundMessagesSubTitle').css('display', 'block')
+    if(messages.length > 0){
+      messages.forEach((message) => {
+        var listElem = $('<li>').text(message.content)
+  
+        listElem.on('click', function(){
+          if($('span[id="' + message._id + '"]').length == 0){
+            var datetime = new Date(message.time)
+            var msg = new Message(message.user_id, message.username, datetime, message.channel, message.content)
+            msg._id = message._id
+  
+            $('#chat-messages').prepend(msg.toHTML())
+          }
+
+          var target = $('span[id="' + message._id + '"]')
+          var offset = target.height()
+          target.parent().css('border', '2px solid rgba(142,68,173,0.4)')
+          $('#searchPanel').toggle('slide', {direction: 'right'}, 200, () => {
+            $('#searchedMessages').html('')
+            $('#foundMessagesSubTitle').css('display', 'none')
+          })
+          $('#chat-messages').stop().animate({'scrollTop': target.offset().top - offset - 50}, 800, 'swing', () => {
+            setTimeout(function(){
+              $({alpha: 0.4}).animate({alpha: 0}, {
+                duration: 1000,
+                step: function(){
+                  target.parent().css('border-color','rgba(142,68,173,' + this.alpha + ')')
+                }
+              })
+            }, 2000)
+          })
+        })
+  
+        $('#searchedMessages').append(listElem)
+      })
+    }else{
+      $('#searchedMessages').append($('<li>').text('[!] No se han encontrado coincidencias'))
     }
   })
 }
