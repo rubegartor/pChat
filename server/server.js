@@ -27,7 +27,7 @@ db.on('error', () => {
   process.exit(1)
 })
 
-User.updateMany({status: 'online'}, {$set: {status: 'offline'}}).exec() //Set all offline clients to online on server startup
+User.updateMany({status: 'online'}, {$set: {status: 'offline'}}).exec() //Set all online clients to offline on server startup
 
 function getUsersOnline(){
   User.find().exec((err, users) => {
@@ -253,6 +253,14 @@ io.on('connection', (client) => {
         io.to(client.id).emit('updateRoles', {'status': 'err', 'message': 'No tienes permisos para realizar esta acción'})
       }
     })
+  })
+
+  client.on('searchMessages', (data) => {
+    if(data.message.length > 0){
+      Message.find({username: data.user.username, channel: data.channel, content: {$regex : '.*' + data.message + '.*'}}).exec((err, messages) => {
+        io.to(client.id).emit('searchMessagesResponse', messages)
+      })
+    }
   })
 
   client.on('disconnect', () => {
