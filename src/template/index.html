@@ -60,9 +60,20 @@
     <div class="chat-bottom" id="chatBottom">
       <input type="text" class="mainInput" placeholder="Enviar mensaje" id="mainInput"/>
     </div>
-  </div>
+  </div>  
   <div class="configPanel" id="configPanel">
-    <div class="row">
+    <div class="leftSidebar">
+      <div class="title">Opciones:</div>
+      <div class="separator"></div>
+      <ul class="list">
+        <li>Configuración de Usuario</li>
+        <li>Configuración de pChat</li>
+        <li>Configuración de ...</li>
+        <li>Configuración de ...</li>
+      </ul>
+    </div>
+    <div class="right">
+      <div class="row">
         <div class="left">
           <div class="title">UwU</div>
           <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
@@ -70,32 +81,29 @@
         <div class="right">
           <input class="configInput" placeholder="Inserta tu nuevo nickname"/>
         </div>
-    </div>
-    <div class="separator"></div>
-    <div class="row">
+      </div>
+      <div class="separator"></div>
+      <div class="row">
         <div class="left">
           <div class="title">OwO</div>
           <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
         </div>
         <div class="right">
-          <label class="switch">
-            <input type="checkbox">
-            <span class="slider round"></span>
-          </label>
+          <input type="checkbox" id="switch" /><label for="switch">Toggle</label>
         </div>
-    </div>
-    <div class="separator"></div>
-    <div class="row">
+      </div>
+      <div class="separator"></div>
+      <div class="row">
         <div class="left">
           <div class="title">EwE</div>
           <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
         </div>
         <div class="right">
-          oasd
+          <button type="button">Hola que tal</button>
         </div>
-    </div>
-    <div class="separator"></div>
-    <div class="row">
+      </div>
+      <div class="separator"></div>
+      <div class="row">
         <div class="left">
           <div class="title">AwA</div>
           <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
@@ -103,7 +111,8 @@
         <div class="right">
           oasd
         </div>
-    </div>    
+      </div>
+    </div>
   </div>
   <div class="modal-createChannel" id="modal-createChannel" style="display: none;">
     <div class="body">

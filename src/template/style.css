@@ -731,26 +731,73 @@ a:active{
   display: none;
   position: absolute;
   top: 40px;
-  left: 250px;
+  left: 0px;
   background-color: var(--body);
-  width: calc(100% - 250px);
-  height: calc(100vh - 40px);
+  width: 100%;
+  height: calc(100vh - 50px);
+}
+
+.configPanel .leftSidebar{
+  background-color: var(--sidebar);
+  width: 250px;
+  height: 100vh;
+  float: left;
+}
+
+.configPanel .leftSidebar .list{
+  width: 100%;
+  height: auto;
+}
+
+.configPanel .leftSidebar .list li{
+  height: auto;
+  margin-left: 10px; 
+  margin-right: 10px;
+  margin-top: 8px;
+  padding: 5px 15px;
+  border-radius: 3px;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.configPanel .leftSidebar .list li:hover{
+  background-color: var(--body);
+}
+
+.configPanel .leftSidebar .title{
+  font-weight: bold;
+  margin-left: 17px;
+}
+
+.configPanel .leftSidebar .separator{
+  background-color: var(--separator);
+  width: calc(100% - 30px);
+  height: 2px;
+  margin: 5px 15px 7px 15px;
+}
+
+.configPanel .right{
+  display: inline-block;
+  height: calc(100vh - 50px);
+  width: calc(100% - 260px);
   overflow-y: auto;
 }
 
-.configPanel .row{
+.configPanel .right .row{
   display: table;
   width: 100%;
 }
 
-.configPanel .separator{
+.configPanel .right .separator{
   background-color: var(--message-bg);
   width: calc(100% - 30px);
   height: 2px;
   margin: 5px 15px;
 }
 
-.configPanel .row .left{
+.configPanel .right .row .left{
   display: inline-block;
   display: table-cell;
   width: 35%;
@@ -759,20 +806,20 @@ a:active{
   vertical-align: middle;
 }
 
-.configPanel .row .left .title{
+.configPanel .right .row .left .title{
   font-size: 1.05em;
   font-weight: bold;
   margin-left: 15px;
 }
 
-.configPanel .row .left .description{
+.configPanel .right .row .left .description{
   font-size: 0.8em;
   opacity: 0.6;
   margin-top: 5px;
   margin-left: 15px;
 }
 
-.configPanel .row .right{
+.configPanel .right .row .right{
   display: inline-block;
   display: table-cell;
   width: 65%;
@@ -783,7 +830,7 @@ a:active{
 
 .configInput{
   background-color: var(--input);
-  width: calc(100% - 24px);
+  width: calc(100% - 35px);
   height: 35px;
   outline: 0;
   border: 0;
@@ -795,69 +842,6 @@ a:active{
 
 .configInput::placeholder{
   color: rgba(255, 255, 255, 0.6);
-}
-
-.switch {
-  position: absolute;
-  display: inline-block;
-  width: 48px;
-  height: 28px;
-  margin-top: -12px;
-  margin-left: 10px;
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
-  left: 4px;
-  bottom: 4px;
-  background-color: #FFFFFF;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: var(--switch);
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px var(--switch);
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(20px);
-  -ms-transform: translateX(20px);
-  transform: translateX(20px);
-}
-
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
 }
 
 .imageMsg{
@@ -1104,4 +1088,46 @@ input:checked + .slider:before {
 
 .searchedMessages li:hover{
   text-decoration: underline;
+}
+
+input[type=checkbox]{
+	height: 0;
+	width: 0;
+	visibility: hidden;
+}
+
+label {
+	cursor: pointer;
+	text-indent: -9999px;
+	width: 60px;
+	height: 35px;
+	background-color: var(--gray);
+	display: block;
+	border-radius: 100px;
+	position: relative;
+}
+
+label:after {
+	content: '';
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	width: 25px;
+	height: 25px;
+	background-color: #FFFFFF;
+	border-radius: 90px;
+	transition: 0.3s;
+}
+
+input:checked + label {
+	background-color: var(--switch);
+}
+
+input:checked + label:after {
+	left: calc(100% - 5px);
+	transform: translateX(-100%);
+}
+
+label:active:after {
+	width: 20px;
 }
