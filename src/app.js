@@ -40,7 +40,7 @@ $(document).ready(function(){
 
   $('#chnl-panel').on('click', 'li', function(){
     if($(this).children('input').length == 0){
-      if($(this).text() != funcs.getActiveChannel()){
+      if($(this).text() != funcs.getActiveChannel() && $('#configPanel').css('display') != 'block'){
         $('#chnl-panel > li').removeClass('active-channel')
         $('#mainInput').prop('disabled', false)
         $(this).addClass('active-channel')
@@ -75,9 +75,12 @@ $(document).ready(function(){
     if(channelName.length > 0){
       var channelPos = $('#chnl-panel > li').length
       new Channel('#' + channelName).create(channelPos, ['everyone'])
-      $('#modal-createChannel-nameInput').remove()
       $('#modal-createChannel').toggle('fade', 200, () => {
-        $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+        if($('#configPanel').css('display') != 'none'){
+          $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+        }else{
+          $('#chnl-hr').attr('data-content', 'Configuración')
+        }
       })
     }else{
       funcs.addAlert('Necesitas especificar un nombre válido', 'alert-red')
@@ -87,7 +90,11 @@ $(document).ready(function(){
 
   $('#modal-createChannel-cancelButton').on('click', () => {
     $('#modal-createChannel').toggle('fade', 200, () => {
-      $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+      if($('#configPanel').css('display') != 'none'){
+        $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+      }else{
+        $('#chnl-hr').attr('data-content', 'Configuración')
+      }
     })
   })
 
