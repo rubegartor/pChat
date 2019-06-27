@@ -121,7 +121,7 @@ io.on('connection', (client) => {
             }
           }
         }else{
-          removeMessagesPerm = true;
+          removeMessagesPerm = true
         }
   
         if(removeMessagesPerm){
