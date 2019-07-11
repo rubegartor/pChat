@@ -1,5 +1,4 @@
 const crypto = require('crypto')
-const fs = require('fs')
 const contextFuncs = require('./contextFuncs')
 const remote = require('electron').remote
 
@@ -182,11 +181,6 @@ module.exports = {
     }
   },
 
-  base64Encode: (file) => {
-    var body = fs.readFileSync(file)
-    return body.toString('base64')
-  },
-
   splitAutocomplete: (val) => {
     return val.split(/@\s*/)
   },
@@ -242,15 +236,15 @@ module.exports = {
   },
 
   hexToRgb: (hex, opacity) => {
-    var h=hex.replace('#', '');
-    h =  h.match(new RegExp('(.{'+h.length/3+'})', 'g'));
+    var h=hex.replace('#', '')
+    h =  h.match(new RegExp('(.{'+h.length/3+'})', 'g'))
   
     for(var i=0; i<h.length; i++)
-        h[i] = parseInt(h[i].length==1? h[i]+h[i]:h[i], 16) + 3;
+      h[i] = parseInt(h[i].length==1? h[i]+h[i]:h[i], 16) + 3
   
-    if (typeof opacity != 'undefined')  h.push(opacity);
+    if (typeof opacity != 'undefined')  h.push(opacity)
   
-    return 'rgba('+h.join(',')+')';
+    return 'rgba('+h.join(',')+')'
   }
 }
 
