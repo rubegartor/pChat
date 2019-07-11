@@ -132,37 +132,45 @@ $(document).ready(function(){
     }
   })
 
-  $('#notifBtn').on('click', () => {
-    vars.me.status.main = 'online'
+  $('.no-class-controlImages').on('click', function(){
+    switch($(this).attr('id')){
+      case 'searchBtn':
+        if($('#configPanel').css('display') == 'none'){
+          $('#searchInput').val('')
+          $('#searchPanel').toggle('slide', {direction: 'right'}, 200, () => {
+            $('#searchedMessages').html('')
+            $('#foundMessagesSubTitle').css('display', 'none')
+            $('#searchInput').focus()
+          })
+        }
+        break
+      case 'notifBtn':
+        vars.me.status.main = 'online'
 
-    if($('#notifBtn').attr('src') == 'file:///images/notif1_20.png'){
-      $('#notifBtn').attr('src', 'file:///images/notif2_20.png')  
-      vars.me.status.notif = true
-    }else{
-      $('#notifBtn').attr('src', 'file:///images/notif1_20.png')
-      vars.me.status.notif = false
+        if($('#notifBtn').attr('src') == 'file:///images/notif1_20.png'){
+          $('#notifBtn').attr('src', 'file:///images/notif2_20.png')  
+          vars.me.status.notif = true
+        }else{
+          $('#notifBtn').attr('src', 'file:///images/notif1_20.png')
+          vars.me.status.notif = false
+        }
+    
+        vars.me.updateStatus()
+        break
+      case 'cogBtn':
+        if($('#searchPanel').css('display') == 'block'){
+          $('#searchPanel').toggle('slide', {direction: 'right'}, 200)
+        }
+
+        $('#configPanel').toggle('slide', {direction: 'down'}, 300)
+
+        if(!$('#chnl-hr').attr('data-content').startsWith('#')){
+          $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
+        }else{
+          $('#chnl-hr').attr('data-content', 'Configuración')
+        }
+        break
     }
-
-    vars.me.updateStatus()
-  })
-
-  $('#cogBtn').on('click', () => {
-    $('#configPanel').toggle('slide', {direction: 'down'}, 300)
-
-    if(!$('#chnl-hr').attr('data-content').startsWith('#')){
-      $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
-    }else{
-      $('#chnl-hr').attr('data-content', 'Configuración')
-    }
-  })
-
-  $('#searchBtn').on('click', () => {
-    $('#searchInput').val('')
-    $('#searchPanel').toggle('slide', {direction: 'right'}, 200, () => {
-      $('#searchedMessages').html('')
-      $('#foundMessagesSubTitle').css('display', 'none')
-      $('#searchInput').focus()
-    })
   })
 
   $('#searchInput').on('keypress', function(e){
@@ -235,10 +243,23 @@ $(document).ready(function(){
     ev.preventDefault()
     const imageUrl = ev.dataTransfer.getData('url')
     funcs.imageUrlToB64(imageUrl, function(b64){
-      var time = +new Date
-      var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
-      message.image = b64
-      message.send()
+      var buff = Buffer.from(b64, 'base64')
+        jimp.read(buff).then((img) => {
+          //Se reduce la calidad de la imagen
+          var reducedImagePromise = img.quality(60).getBase64Async(jimp.MIME_JPEG)
+          reducedImagePromise.then((result) => {
+            if(img.bitmap.width > 0 && img.bitmap.height > 0){
+              var time = +new Date
+              var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+              message.image = result
+              message.send()
+            }else{
+              funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
+            }
+          })
+        }).catch(() => {
+          funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
+        })
     })
   }
 
@@ -249,18 +270,19 @@ $(document).ready(function(){
     for(let f of e.originalEvent.dataTransfer.files) {
       var type = f.type.split('/')
       if(vars.socket.connected && type[0] == 'image'){
-        var b64 = funcs.base64Encode(f.path)
-        var buff = Buffer.from(b64, 'base64')
-
-        jimp.read(buff).then((img) => {
-          if(img.bitmap.width > 0 && img.bitmap.height > 0){
-            var time = +new Date
-            var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
-            message.image = b64
-            message.send()
-          }else{
-            funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
-          }
+        jimp.read(f.path).then((img) => {
+          //Se reduce la calidad de la imagen
+          var reducedImagePromise = img.quality(60).getBase64Async(jimp.MIME_JPEG)
+          reducedImagePromise.then((result) => {
+            if(img.bitmap.width > 0 && img.bitmap.height > 0){
+              var time = +new Date
+              var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+              message.image = result
+              message.send()
+            }else{
+              funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
+            }
+          })
         }).catch(() => {
           funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
         })
@@ -284,10 +306,23 @@ $(document).ready(function(){
     if(blob != null){
       var reader = new FileReader()
       reader.onload = function(event) {
-        var time = +new Date
-        var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
-        message.image = event.target.result.substring(22, event.target.result.length)
-        message.send()
+        var buff = Buffer.from(event.target.result.substring(22, event.target.result.length), 'base64')
+        jimp.read(buff).then((img) => {
+          //Se reduce la calidad de la imagen
+          var reducedImagePromise = img.quality(60).getBase64Async(jimp.MIME_JPEG)
+          reducedImagePromise.then((result) => {
+            if(img.bitmap.width > 0 && img.bitmap.height > 0){
+              var time = +new Date
+              var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+              message.image = result
+              message.send()
+            }else{
+              funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
+            }
+          })
+        }).catch(() => {
+          funcs.addAlert('La imagen que estas intentando enviar no es válida', 'alert-red')
+        })
       }
       reader.readAsDataURL(blob)
     }

@@ -41,7 +41,7 @@ module.exports = class Message{
     header.append($('<span>').addClass('message-username').text(this.username))
     header.append($('<span>').addClass('message-time').text(time))
     if(this.image != null){
-      var image = $('<img>').attr({id: this._id, src: 'data:image/png;base64,' + this.image}).addClass('imageMsg')
+      var image = $('<img>').attr({id: this._id, src: this.image}).addClass('imageMsg')
       var imageContainer = $('<span>').attr({user_id: this.user_id, id: this._id, datetime: this.time}).append(image)
       image.on('load', () => {
         funcs.scroll()
@@ -64,7 +64,7 @@ module.exports = class Message{
   toAppend(){
     var toRet = null
     if(this.image != null){
-      var image = $('<img>').attr({id: this._id, src: 'data:image/png;base64,' + this.image}).addClass('imageMsg')
+      var image = $('<img>').attr({id: this._id, src: this.image}).addClass('imageMsg')
       var imageContainer = $('<span>').attr({user_id: this.user_id, id: this._id, datetime: this.time}).append(image)
       image.on('load', () => {
         funcs.scroll()
