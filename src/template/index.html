@@ -41,7 +41,7 @@
   <div class="sidebar" id="sidebar" style="visibility: hidden;">
     <div class="sidebar-panel1"></div>
     <div class="sidebar-panel2">
-      <div class="sidebar-title">Canales de texto: <img src="file:///images/plus_20.png" id="createChannelBtn"/></div>
+      <div class="sidebar-title">Canales de texto: <img src="file:///images/plus_20.png" id="createChannelBtn" title="Añadir canal"/></div>
       <div class="separator-sidebar"></div>
       <ul class="sidebar-channel" id="chnl-panel"></ul>
       <div class="sidebar-title sidebar-title-mt">Usuarios: <img src="file:///images/chevron_up_20.png" id="toggleUsersViewBtn"/></div>
@@ -65,51 +65,73 @@
     <div class="leftSidebar">
       <div class="title">Opciones:</div>
       <div class="separator"></div>
-      <ul class="list">
-        <li>Configuración de Usuario</li>
+      <ul class="list" id="configOptionsList">
+        <li class="configOptionsListItemActive">Configuración de Usuario</li>
         <li>Configuración de pChat</li>
         <li>Configuración de ...</li>
         <li>Configuración de ...</li>
       </ul>
     </div>
     <div class="right">
-      <div class="row">
-        <div class="left">
-          <div class="title">UwU</div>
-          <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
+      <div id="userConfigPanel">
+        <div class="row">
+          <div class="left">
+            <div class="title">Nickname Color</div>
+            <div class="description">El color con el que el nickname de tu nombre de usuario aparecerá en los mensajes del chat</div>
+          </div>
+          <div class="right">
+            <div class="color-picker">
+              <div class="color no-select" data-color="#FFFFFF" style="background: #FFFFFF;"></div>
+              <div class="color no-select" data-color="#F44336" style="background: #F44336"></div>
+              <div class="color no-select" data-color="#E91E63" style="background: #E91E63;"></div>
+              <div class="color no-select" data-color="#9C27B0" style="background: #9C27B0;"></div>
+              <div class="color no-select" data-color="#673AB7" style="background: #673AB7;"></div>
+              <div class="color no-select" data-color="#3F51B5" style="background: #3F51B5;"></div>
+              <div class="color no-select" data-color="#2196F3" style="background: #2196F3;"></div>
+              <div class="color no-select" data-color="#03A9F4" style="background: #03A9F4;"></div>
+              <div class="color no-select" data-color="#4CAF50" style="background: #4CAF50;"></div>
+              <div class="color no-select" data-color="#8BC34A" style="background: #8BC34A;"></div>
+              <div class="color no-select" data-color="#CDDC39" style="background: #CDDC39;"></div>
+              <div class="color no-select" data-color="#FFEB3B" style="background: #FFEB3B;"></div>
+              <div class="color no-select" data-color="#FFC107" style="background: #FFC107;"></div>
+              <div class="color no-select" data-color="#FF5722" style="background: #FF5722;"></div>
+              <div class="color no-select" data-color="#795548" style="background: #795548;"></div>
+              <div class="color no-select" data-color="#607D8B" style="background: #607D8B;"></div>
+            </div>
+          </div>
         </div>
-        <div class="right">
-          <input class="configInput" placeholder="Inserta tu nuevo nickname"/>
+        <div class="separator"></div>
+        <div class="row">
+          <div class="left">
+            <div class="title">Nickname</div>
+            <div class="description">Es el nombre con el que el resto de usuarios verán tus mensajes (Aún no disponible)</div>
+          </div>
+          <div class="right" style="white-space: nowrap; overflow-x: hidden;">
+            <div class="form-inline">
+              <input class="configInput" placeholder="Inserta tu nuevo nickname"/>
+              <button type="button" class="configButton-blue">&#10004;</button>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="separator"></div>
-      <div class="row">
-        <div class="left">
-          <div class="title">OwO</div>
-          <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
+        <div class="separator"></div>
+        <div class="row">
+          <div class="left">
+            <div class="title">OwO</div>
+            <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
+          </div>
+          <div class="right">
+            <input type="checkbox" id="switch-1" /><label for="switch-1"></label>
+          </div>
         </div>
-        <div class="right">
-          <input type="checkbox" id="switch" /><label for="switch">Toggle</label>
-        </div>
-      </div>
-      <div class="separator"></div>
-      <div class="row">
-        <div class="left">
-          <div class="title">EwE</div>
-          <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
-        </div>
-        <div class="right">
-          <button type="button">Hola que tal</button>
-        </div>
-      </div>
-      <div class="separator"></div>
-      <div class="row">
-        <div class="left">
-          <div class="title">AwA</div>
-          <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
-        </div>
-        <div class="right">
-          oasd
+        <div class="separator"></div>
+        <div class="row">
+          <div class="left">
+            <div class="title">EwE</div>
+            <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
+          </div>
+          <div class="right">
+            <button type="button">Hola que tal</button>
+          </div>
         </div>
       </div>
     </div>
@@ -119,7 +141,7 @@
       <div class="title">Crear canal</div>
       <div class="content">
         <div class="subTitle">NOMBRE DEL CANAL:</div>
-        <input type="text" class="configInput" id="modal-createChannel-nameInput"/>
+        <input type="text" class="w-100-input" id="modal-createChannel-nameInput"/>
       </div>
       <div class="btnBox">
         <a href="#">Más opciones</a>

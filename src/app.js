@@ -176,6 +176,16 @@ $(document).ready(function(){
     $('#foundMessagesSubTitle').css('display', 'none')
   })
 
+  $('#configOptionsList > li').on('click', function(){
+    $('#configOptionsList > li').removeClass('configOptionsListItemActive')
+    $(this).addClass('configOptionsListItemActive')
+  })
+
+  $('.color').on('click', function(){
+    $('.color').css('box-shadow', 'none');
+    $(this).css({'background': 'white !important', 'box-shadow': funcs.hexToRgb($(this).attr('data-color'), 0.3) + ' 0px 0px 0px 4px'});
+  })
+
   $('#mainInput').on('keydown', (event) => {
     if (event.keyCode === $.ui.keyCode.TAB) {
       event.preventDefault()

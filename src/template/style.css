@@ -62,6 +62,10 @@ a:active{
   border-radius: 10px;
 }
 
+::-webkit-scrollbar:horizontal {
+  height: 12px;
+}
+
 .control-box{
   position: absolute;
   top: 0;
@@ -727,6 +731,22 @@ a:active{
   background-color: rgba(241, 196, 15, 0.8);
 }
 
+.w-100-input{
+  background-color: var(--input);
+  height: 35px;
+  width: calc(100% - 25px);
+  outline: 0;
+  border: 0;
+  border-radius: 5px;
+  padding: 0px 12px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+.w-100-input::placeholder{
+  color: rgba(255, 255, 255, 0.6);
+}
+
 .configPanel{
   display: none;
   position: absolute;
@@ -760,6 +780,10 @@ a:active{
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.configOptionsListItemActive{
+  background-color: var(--body);
 }
 
 .configPanel .leftSidebar .list li:hover{
@@ -822,7 +846,6 @@ a:active{
 .configPanel .right .row .right{
   display: inline-block;
   display: table-cell;
-  width: 65%;
   height: 100%;
   padding: 10px;
   vertical-align: middle;
@@ -830,8 +853,8 @@ a:active{
 
 .configInput{
   background-color: var(--input);
-  width: calc(100% - 35px);
   height: 35px;
+  width: calc(100% - 60px);
   outline: 0;
   border: 0;
   border-radius: 5px;
@@ -842,6 +865,28 @@ a:active{
 
 .configInput::placeholder{
   color: rgba(255, 255, 255, 0.6);
+}
+
+.configButton-blue{
+  background-color: var(--blue);
+  font-size: 0.95em;
+  border: 0px;
+  border-radius: 5px;
+  height: 35px;
+  padding: 0px 10px;
+  width: auto;
+  margin-right: 10px;
+  color: var(--text-color);
+  outline: 0;
+  cursor: pointer;
+}
+
+.configButton-blue:hover{
+  background-color: var(--blue-hover);
+}
+
+.configButton-blue:active{
+  opacity: .8;
 }
 
 .imageMsg{
@@ -1100,7 +1145,8 @@ label {
 	cursor: pointer;
 	text-indent: -9999px;
 	width: 60px;
-	height: 35px;
+  height: 35px;
+  margin-top: -20px;
 	background-color: var(--gray);
 	display: block;
 	border-radius: 100px;
@@ -1130,4 +1176,28 @@ input:checked + label:after {
 
 label:active:after {
 	width: 20px;
+}
+
+.color-picker{
+  width: 100%;
+  height: auto;
+  padding: 10px 0px 5px 0px;
+}
+
+.color-picker .color{
+  position: relative;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin: 5px 0px;
+  margin-right: 5px;
+  border-radius: 50%;
+}
+
+.color-picker .color:hover{
+  transform: scale(1.2, 1.2);
+}
+
+.form-inline {
+  display: inline-block;
 }

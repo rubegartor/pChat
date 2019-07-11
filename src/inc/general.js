@@ -239,6 +239,18 @@ module.exports = {
     $('#main-image > div').html('')
     $('#main-image > div').append(new_img)
     $('#main-image').show()
+  },
+
+  hexToRgb: (hex, opacity) => {
+    var h=hex.replace('#', '');
+    h =  h.match(new RegExp('(.{'+h.length/3+'})', 'g'));
+  
+    for(var i=0; i<h.length; i++)
+        h[i] = parseInt(h[i].length==1? h[i]+h[i]:h[i], 16) + 3;
+  
+    if (typeof opacity != 'undefined')  h.push(opacity);
+  
+    return 'rgba('+h.join(',')+')';
   }
 }
 
