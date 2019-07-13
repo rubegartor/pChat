@@ -18,6 +18,8 @@ const striptags = require('striptags')
 const window = (new JSDOM('')).window
 const DOMPurify = createDOMPurify(window)
 
+const userRowsNoSensitive = 'user_id username color roles'
+
 mongoose.connect(config.dbURL, {useNewUrlParser: true}) 
 mongoose.Promise = global.Promise
 let db = mongoose.connection
@@ -29,9 +31,9 @@ db.on('error', () => {
 
 User.updateMany({status: 'online'}, {$set: {status: 'offline'}}).exec() //Set all online clients to offline on server startup
 
-function getUsersOnline(){
+function getUsers(){
   User.find().exec((err, users) => {
-    io.emit('getUsersOnlineResponse', users)
+    io.emit('getUsersResponse', users)
   })
 }
 
@@ -45,7 +47,7 @@ io.on('connection', (client) => {
           if(res){
             User.findOne({username: creds.username}).populate({path: 'roles'}).exec((err, user) => {
               User.updateOne({username: creds.username}, {$set: {'user_id': client.id}, 'status.main': 'online'}).exec(() => {
-                io.to(client.id).emit('loginRequestResponse', {'status': 'ok', 'username': creds.username, 'user_status': user.status, 'roles': user.roles})
+                io.to(client.id).emit('loginRequestResponse', {'status': 'ok', 'username': creds.username, 'user_status': user.status, 'roles': user.roles, 'color': user.color})
               })
             })
           }else{
@@ -76,7 +78,7 @@ io.on('connection', (client) => {
   })
 
   client.on('getChannelMessages', (channel) => {
-    Channel.findOne({name: channel}).populate({path:'messages', options: {limit: 20, sort: {_id: -1}}}).exec((err, item) => {
+    Channel.findOne({name: channel}).populate({path: 'messages', options: {limit: 20, sort: {_id: -1}}, populate: {path: 'user', select: userRowsNoSensitive}}).exec((err, item) => {
       io.to(client.id).emit('getChannelMessagesResponse', item)
     })
   })
@@ -85,27 +87,28 @@ io.on('connection', (client) => {
     var finalMessage = DOMPurify.sanitize(striptags(message.content, ['u', 'i', 'b']))
     var haveText = DOMPurify.sanitize(striptags(message.content)).length
 
-    var msg = new Message({
-      _id: new mongoose.mongo.ObjectId(),
-      user_id: message.user_id,
-      username: message.username,
-      content: finalMessage,
-      time: message.time,
-      channel: message.channel,
-      state: message.state,
-      file: message.file,
-      image: message.image
+    User.findOne({username: message.user.username}, (err, user) => {
+      var msg = new Message({
+        _id: new mongoose.mongo.ObjectId(),
+        user: user._id,
+        content: finalMessage,
+        time: message.time,
+        channel: message.channel,
+        state: message.state,
+        file: message.file,
+        image: message.image
+      })
+
+      msg.save().then((msg) => {
+        Channel.updateOne({name: message.channel}, {$push: {messages: msg._id}}).exec()
+  
+        if((finalMessage.trim().length > 0 && haveText > 0) || msg.image != null){
+          Message.findOne({_id: msg._id}).populate('user', userRowsNoSensitive).exec((err, toSendMessage) => {
+            io.in(msg.channel).emit('messageResponse', toSendMessage)
+          })
+        }
+      })
     })
-
-    msg.save((err) => {
-      if(err) return console.error(err)
-    })
-
-    Channel.updateOne({name: message.channel}, {$push: {messages: msg._id}}).exec()
-
-    if((finalMessage.trim().length > 0 && haveText > 0) || msg.image != null){
-      io.in(msg.channel).emit('messageResponse', msg)
-    }
   })
 
   client.on('removeMessage', (message) => {
@@ -193,13 +196,19 @@ io.on('connection', (client) => {
     })
   })
 
-  client.on('getUsersOnline', () => {
-    getUsersOnline()
+  client.on('getUsers', () => {
+    getUsers()
   })
 
   client.on('updateUsernameStatus', (user) => {
     User.updateOne({user_id: client.id}, {$set: {'status': user.status}}).exec(() => {
-      getUsersOnline()
+      getUsers()
+    })
+  })
+
+  client.on('updateUsernameColor', (data) => {
+    User.updateOne({user_id: client.id}, {$set: {'color': data.newColor}}).exec(() => {
+      io.emit('updateUsernameColorResponse', data)
     })
   })
 
@@ -257,15 +266,17 @@ io.on('connection', (client) => {
 
   client.on('searchMessages', (data) => {
     if(data.message.length > 0){
-      Message.find({username: data.user.username, channel: data.channel, content: {$regex : '.*' + data.message + '.*'}}).exec((err, messages) => {
-        io.to(client.id).emit('searchMessagesResponse', messages)
+      User.findOne({username: data.user.username}).exec((err, user) => {
+        Message.find({user: user._id, channel: data.channel, content: {$regex : '.*' + data.message + '.*'}}).exec((err, messages) => {
+          io.to(client.id).emit('searchMessagesResponse', messages)
+        })
       })
     }
   })
 
   client.on('disconnect', () => {
     User.updateOne({user_id: client.id}, {$set: {'status.main': 'offline'}}).exec(() => {
-      getUsersOnline()
+      getUsers()
     })
     console.log('Client disconnected: ', client.id)
   })

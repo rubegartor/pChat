@@ -2,8 +2,10 @@ var mongoose = require('mongoose')
 
 let messagesSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
-  user_id: String,
-  username: String,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users'
+  },
   content: String,
   time: Number,
   channel: String,

@@ -102,7 +102,7 @@ $(document).ready(function(){
     if(e.which == 13){
       if($(this).val().trim() != ''){
         var time = +new Date
-        var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), $(this).val().trim())
+        var message = new Message(vars.me, time, funcs.getActiveChannel(), $(this).val().trim())
         message.send()
       }
       $(this).val('')

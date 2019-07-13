@@ -1,4 +1,5 @@
 const Role = require('./role.js')
+require('jquery.scrollto/jquery.scrollTo')
 
 module.exports = () => {
   vars.socket.on('disconnect', () => {
@@ -28,6 +29,7 @@ module.exports = () => {
       user.user_id = vars.socket.id
       user.password = null
       user.status = response.user_status
+      user.color = response.color
       response.roles.forEach((role) => {
         var roleObj = new Role(role.name)
         roleObj._id = role._id
@@ -42,7 +44,7 @@ module.exports = () => {
       vars.me = user
       
       vars.socket.emit('getChannels')
-      vars.socket.emit('getUsersOnline')
+      vars.socket.emit('getUsers')
 
       $('#mainInput').css('display', 'block')
       $('#sidebar').css('visibility', 'visible')
@@ -119,7 +121,7 @@ module.exports = () => {
 
   vars.socket.on('messageResponse', (msg) => {
     var datetime = new Date(msg.time)
-    var message = new Message(msg.user_id, msg.username, datetime, msg.channel, msg.content)
+    var message = new Message(msg.user, datetime, msg.channel, msg.content)
     message._id = msg._id
     if(msg.image != null){
       message.image = msg.image
@@ -159,7 +161,7 @@ module.exports = () => {
     resp.messages = resp.messages.reverse()
     resp.messages.forEach((msg) => {
       var datetime = new Date(msg.time)
-      var message = new Message(msg.user_id, msg.username, datetime, msg.channel, msg.content)
+      var message = new Message(msg.user, datetime, msg.channel, msg.content)
       message._id = msg._id
       if(msg.image != null){
         message.image = msg.image
@@ -200,7 +202,7 @@ module.exports = () => {
     }
   })
 
-  vars.socket.on('getUsersOnlineResponse', (users) => {
+  vars.socket.on('getUsersResponse', (users) => {
     var finalUsers = []
     $('#usrs-panel').html('')
     users.forEach((user) => {
@@ -261,28 +263,29 @@ module.exports = () => {
         listElem.on('click', function(){
           if($('span[id="' + message._id + '"]').length == 0){
             var datetime = new Date(message.time)
-            var msg = new Message(message.user_id, message.username, datetime, message.channel, message.content)
+            var msg = new Message(vars.me, datetime, message.channel, message.content)
             msg._id = message._id
   
             $('#chat-messages').prepend(msg.toHTML())
           }
 
-          var target = $('span[id="' + message._id + '"]')
-          var offset = target.height()
-          target.parent().css('border', '2px solid rgba(142,68,173,0.4)')
+          var target = $('span[id="' + message._id + '"]').parent()
+          target.css('border', '2px solid rgba(142,68,173,0.4)')
           $('#searchPanel').toggle('slide', {direction: 'right'}, 200, () => {
             $('#searchedMessages').html('')
             $('#foundMessagesSubTitle').css('display', 'none')
           })
-          $('#chat-messages').stop().animate({'scrollTop': target.offset().top - offset - 50}, 800, 'swing', () => {
-            setTimeout(function(){
-              $({alpha: 0.4}).animate({alpha: 0}, {
-                duration: 1000,
-                step: function(){
-                  target.parent().css('border-color','rgba(142,68,173,' + this.alpha + ')')
-                }
-              })
-            }, 2000)
+          $('#chat-messages').scrollTo(target.prev(), 800, {
+            onAfter: () => {
+              setTimeout(() => {
+                $({alpha: 0.4}).animate({alpha: 0}, {
+                  duration: 1000,
+                  step: function(){
+                    target.css('border-color','rgba(142,68,173,' + this.alpha + ')')
+                  }
+                })
+              }, 2000)
+            }
           })
         })
   
@@ -291,5 +294,14 @@ module.exports = () => {
     }else{
       $('#searchedMessages').append($('<li>').text('[!] No se han encontrado coincidencias'))
     }
+  })
+
+  vars.socket.on('updateUsernameColorResponse', (data) => {
+    vars.me.color = data.newColor
+    $('.message-header').each(function(index){
+      if($(this).children('span:first').text() === vars.me.username){
+        $(this).children('span:first').css('color', data.newColor)
+      }
+    })
   })
 }

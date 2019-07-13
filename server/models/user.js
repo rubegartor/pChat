@@ -5,6 +5,7 @@ let usersSchema = mongoose.Schema({
   user_id: String, 
   username: String,
   password: String,
+  color: String,
   status: Object,
   roles: [{
     type: mongoose.Schema.Types.ObjectId,
