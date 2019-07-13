@@ -1,4 +1,5 @@
 const fs = require('fs')
+const process = require('process')
 const config = JSON.parse(fs.readFileSync('settings.json', 'utf-8'))
 const server = require('https').createServer({
   key: fs.readFileSync(config.certs.serverKey, 'utf-8'),
@@ -28,8 +29,6 @@ db.on('error', () => {
   console.log('[ERROR] Cannot connect to MongoDB server')
   process.exit(1)
 })
-
-User.updateMany({status: 'online'}, {$set: {status: 'offline'}}).exec() //Set all online clients to offline on server startup
 
 function getUsers(){
   User.find().exec((err, users) => {
@@ -65,7 +64,7 @@ io.on('connection', (client) => {
       Channel.find({requiredRoles: {$in: user.roles}}).exec((err, channels) => {
         io.to(client.id).emit('setChannels', channels)
       })
-    })   
+    })
   })
 
   client.on('joinChannel', (channel) => {
@@ -290,4 +289,10 @@ io.on('connection', (client) => {
 server.listen(config.port, (err) => {
   if (err) throw err
   console.log('Starting server...\nServer info => https://0.0.0.0:' + config.port + '/')
+})
+
+process.on('uncaughtException', function (err) {
+  fs.appendFile('server.log', '\n' + err.stack, encoding='utf-8', function (err) {
+    console.log('[INFO] Error Logged!');
+  })
 })
