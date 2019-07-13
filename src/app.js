@@ -168,6 +168,7 @@ $(document).ready(function(){
           $('#chnl-hr').attr('data-content', funcs.getActiveChannel())
         }else{
           $('#chnl-hr').attr('data-content', 'Configuración')
+          funcs.loadConfig()
         }
         break
     }
@@ -192,6 +193,7 @@ $(document).ready(function(){
   $('.color').on('click', function(){
     $('.color').css('box-shadow', 'none');
     $(this).css({'background': 'white !important', 'box-shadow': funcs.hexToRgb($(this).attr('data-color'), 0.3) + ' 0px 0px 0px 4px'});
+    vars.me.updateColor($(this).attr('data-color'))
   })
 
   $('#mainInput').on('keydown', (event) => {
@@ -250,7 +252,7 @@ $(document).ready(function(){
           reducedImagePromise.then((result) => {
             if(img.bitmap.width > 0 && img.bitmap.height > 0){
               var time = +new Date
-              var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+              var message = new Message(vars.me, time, funcs.getActiveChannel(), '')
               message.image = result
               message.send()
             }else{
@@ -276,7 +278,7 @@ $(document).ready(function(){
           reducedImagePromise.then((result) => {
             if(img.bitmap.width > 0 && img.bitmap.height > 0){
               var time = +new Date
-              var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+              var message = new Message(vars.me, time, funcs.getActiveChannel(), '')
               message.image = result
               message.send()
             }else{
@@ -313,7 +315,7 @@ $(document).ready(function(){
           reducedImagePromise.then((result) => {
             if(img.bitmap.width > 0 && img.bitmap.height > 0){
               var time = +new Date
-              var message = new Message(vars.socket.id, vars.me.username, time, funcs.getActiveChannel(), '')
+              var message = new Message(vars.me, time, funcs.getActiveChannel(), '')
               message.image = result
               message.send()
             }else{

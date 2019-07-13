@@ -245,6 +245,13 @@ module.exports = {
     if (typeof opacity != 'undefined')  h.push(opacity)
   
     return 'rgba('+h.join(',')+')'
+  },
+
+  loadConfig: function(){
+    var colorElement = $('.color[data-color="' + vars.me.color + '"]')
+    colorElement.css('box-shadow', this.hexToRgb(colorElement.attr('data-color'), 0.3) + ' 0px 0px 0px 4px')
+
+    $('#nicknameConfigInput').val(vars.me.username)
   }
 }
 

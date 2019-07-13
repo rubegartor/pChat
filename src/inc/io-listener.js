@@ -297,7 +297,9 @@ module.exports = () => {
   })
 
   vars.socket.on('updateUsernameColorResponse', (data) => {
-    vars.me.color = data.newColor
+    if(vars.me.username === data.user.username){
+      vars.me.color = data.newColor
+    }
     $('.message-header').each(function(index){
       if($(this).children('span:first').text() === vars.me.username){
         $(this).children('span:first').css('color', data.newColor)

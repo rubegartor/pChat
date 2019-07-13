@@ -43,6 +43,6 @@ module.exports = class User{
   }
 
   updateColor(newColor){
-    vars.socket.emit('updateUsernameColor', {'newColor': newColor})
+    vars.socket.emit('updateUsernameColor', {'newColor': newColor, 'user': new User(this.username)})
   }
 }
