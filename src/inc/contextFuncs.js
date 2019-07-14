@@ -1,7 +1,6 @@
 const { clipboard } = require('electron')
 const { dialog } = require('electron').remote
 const fs = require('fs')
-const vars = require('./vars')
 
 module.exports = {
   copyMessage: (clickedElement) => {
@@ -20,7 +19,6 @@ module.exports = {
     var id = clickedElement.attr('id')
     var message = $('span[id="' + id + '"]')
     var content = $('span[id="' + id + '"]').text()
-    var user_id = message.attr('user_id')
     var username = message.parent().prev().find('span.message-username').text()
     var time = message.parent().prev().find('span.message-time').text()
 
