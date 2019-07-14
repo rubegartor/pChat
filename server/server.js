@@ -31,7 +31,7 @@ db.on('error', () => {
 })
 
 function getUsers(){
-  User.find().exec((err, users) => {
+  User.find({}, '-password').exec((err, users) => {
     io.emit('getUsersResponse', users)
   })
 }
@@ -60,7 +60,7 @@ io.on('connection', (client) => {
   })
 
   client.on('getChannels', () => {
-    User.findOne({'user_id': client.id}).exec((err, user) => {
+    User.findOne({'user_id': client.id}, '-password').exec((err, user) => {
       Channel.find({requiredRoles: {$in: user.roles}}).exec((err, channels) => {
         io.to(client.id).emit('setChannels', channels)
       })
@@ -86,7 +86,7 @@ io.on('connection', (client) => {
     var finalMessage = DOMPurify.sanitize(striptags(message.content, ['u', 'i', 'b']))
     var haveText = DOMPurify.sanitize(striptags(message.content)).length
 
-    User.findOne({username: message.user.username}, (err, user) => {
+    User.findOne({username: message.user.username}, '-password', (err, user) => {
       var msg = new Message({
         _id: new mongoose.mongo.ObjectId(),
         user: user._id,
@@ -111,11 +111,11 @@ io.on('connection', (client) => {
   })
 
   client.on('removeMessage', (message) => {
-    User.findOne({'user_id': client.id}).populate({path: 'roles'}).exec((err, user) => {
-      Message.findOne({_id: message._id}).exec((err, msg) => {
+    User.findOne({'user_id': client.id}, '-password').populate({path: 'roles'}).exec((err, user) => {
+      Message.findOne({_id: message._id}).populate('user', 'username').exec((err, msg) => {
         var removeMessagesPerm = false
 
-        if(user.username != msg.username){ //Si el mensaje pertenece al usuario que ha solicitado la eliminación del mismo, se eliminará independientemente de sus permisos
+        if(user.username != msg.user.username){ //Si el mensaje pertenece al usuario que ha solicitado la eliminación del mismo, se eliminará independientemente de sus permisos
           for(role of user.roles){
             if(role.permissions.removeMessages){
               removeMessagesPerm = true
@@ -159,7 +159,7 @@ io.on('connection', (client) => {
                 return console.error(err)
               }else{
                 //Se envia la creación del canal solo a los usuarios que tengan los roles asignados con los que se ha creado el canal
-                User.find({roles: {$in: rolesIDs}}).exec((err, users) => {
+                User.find({roles: {$in: rolesIDs}}, '-password').exec((err, users) => {
                   users.forEach((user) => {
                     io.to(user.user_id).emit('createChannelResponse', {'status': 'ok', 'data': channel})
                   })
@@ -212,7 +212,7 @@ io.on('connection', (client) => {
   })
 
   client.on('addRole', (data) => {
-    User.findOne({user_id: client.id}).populate({path: 'roles'}).exec((err, user) => {
+    User.findOne({user_id: client.id}, '-password').populate({path: 'roles'}).exec((err, user) => {
       var updateRolesPerm = false
       for(role of user.roles){
         if(role.permissions.updateRoles){
@@ -224,7 +224,7 @@ io.on('connection', (client) => {
       if(updateRolesPerm){
         Role.findOne({name: data.role.name}).exec((err, rl) => {
           if(rl != null){
-            User.findOne({'user_id': data.user.user_id}).exec((err, userRoleData) => {
+            User.findOne({'user_id': data.user.user_id}, '-password').exec((err, userRoleData) => {
               if(!userRoleData.roles.includes(rl._id)){ //Se comprueba si el usuario ya tiene el rol para no duplicarlo
                 User.updateOne({'user_id': data.user.user_id}, {$push: {roles: rl._id}}).exec(() => {
                   io.to(data.user.user_id).emit('updateRoles', {'status': 'ok', 'data': {action: 'add', role: rl}})
@@ -240,7 +240,7 @@ io.on('connection', (client) => {
   })
 
   client.on('removeRole', (data) => {
-    User.findOne({user_id: client.id}).populate({path: 'roles'}).exec((err, user) => {
+    User.findOne({user_id: client.id}, '-password').populate({path: 'roles'}).exec((err, user) => {
       var updateRolesPerm = false
       for(role of user.roles){
         if(role.permissions.updateRoles){
@@ -265,7 +265,7 @@ io.on('connection', (client) => {
 
   client.on('searchMessages', (data) => {
     if(data.message.length > 0){
-      User.findOne({username: data.user.username}).exec((err, user) => {
+      User.findOne({username: data.user.username}, '-password').exec((err, user) => {
         Message.find({user: user._id, channel: data.channel, content: {$regex : '.*' + data.message + '.*'}}).exec((err, messages) => {
           io.to(client.id).emit('searchMessagesResponse', messages)
         })

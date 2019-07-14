@@ -24,7 +24,7 @@ module.exports = {
     var username = message.parent().prev().find('span.message-username').text()
     var time = message.parent().prev().find('span.message-time').text()
 
-    var msg = new Message(user_id, username, time, funcs.getActiveChannel(), content)
+    var msg = new Message(new User(username), time, funcs.getActiveChannel(), content)
     msg._id = id
     msg.remove()
   },
