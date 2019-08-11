@@ -1,5 +1,7 @@
 const $ = require('jquery')
 const {ipcRenderer} = require('electron')
+const electron = require('electron')
+const remote = electron.remote
 
 ipcRenderer.on('notif', function (e, data) {
   $('#iconBg').addClass(data.color)
@@ -9,6 +11,7 @@ ipcRenderer.on('notif', function (e, data) {
 });
 
 $(document).ready(function(){
+  $('#closeNotif').attr('src', 'file:///' + remote.app.getAppPath() + '/images/close_20.png')
   startAnim()
 
   $('#closeNotif').on('click', () => {

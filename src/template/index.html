@@ -19,8 +19,8 @@
   <div class="loginBg" id="loginBg">
     <div class="form">
       <div class="loginTitle">pChat Login</div>
-      <input type="text" placeholder="Usuario" id="loginUsernameInput" value="rubegartor"/>
-      <input type="password" placeholder="Contraseña" id="loginPasswordInput" value="rubegartor"/>
+      <input type="text" placeholder="Usuario" id="loginUsernameInput"/>
+      <input type="password" placeholder="Contraseña" id="loginPasswordInput"/>
       <div id="loginMoreOptionsGroup" style="display: none;">
         <input type="text" placeholder="Host" id="hostLoginInput"/>
         <input type="text" placeholder="Puerto" id="portLoginInput"/>
@@ -41,20 +41,20 @@
   <div class="sidebar" id="sidebar" style="visibility: hidden;">
     <div class="sidebar-panel1"></div>
     <div class="sidebar-panel2">
-      <div class="sidebar-title">Canales de texto: <img src="file:///images/plus_20.png" id="createChannelBtn" title="Añadir canal"/></div>
+      <div class="sidebar-title">Canales de texto: <img id="createChannelBtn" title="Añadir canal"/></div>
       <div class="separator-sidebar"></div>
       <ul class="sidebar-channel" id="chnl-panel"></ul>
-      <div class="sidebar-title sidebar-title-mt">Usuarios: <img src="file:///images/chevron_up_20.png" id="toggleUsersViewBtn"/></div>
+      <div class="sidebar-title sidebar-title-mt">Usuarios: <img id="toggleUsersViewBtn"/></div>
       <div class="separator-sidebar"></div>
       <ul class="sidebar-users" id="usrs-panel"></ul>
     </div>
   </div>
   <div class="chat-container">
     <div class="control-images" id="controlImages" style="display: none;">
-      <img src="file:///images/search_20.png" id="searchBtn" class="no-class-controlImages"/>
-      <img src="file:///images/pushpin_20.png" class="no-class-controlImages"/>
-      <img src="file:///images/notif1_20.png" id="notifBtn" class="no-class-controlImages"/>
-      <img src="file:///images/cog_20.png" id="cogBtn" class="no-class-controlImages"/>
+      <img id="searchBtn" class="no-class-controlImages"/>
+      <img id="pushPinBtn" class="no-class-controlImages"/>
+      <img id="notifBtn" class="no-class-controlImages"/>
+      <img id="cogBtn" class="no-class-controlImages"/>
     </div>
     <div class="chat-messages" id="chat-messages"></div>
     <div class="chat-bottom" id="chatBottom">
@@ -66,11 +66,8 @@
       <div class="title">Opciones:</div>
       <div class="separator"></div>
       <ul class="list" id="configOptionsList">
-        <li class="configOptionsListItemActive">Configuración de Usuario</li>
-        <li>Configuración de pChat</li>
-        <li>Configuración de ...</li>
-        <li>Configuración de ...</li>
-        <li>Opciones de Administrador</li>
+        <li class="configOptionsListItemActive" id="userConfigPanel-option">Configuración de Usuario</li>
+        <li id="adminConfigPanel-option" style="display: none;">Opciones de Administrador</li>
       </ul>
     </div>
     <div class="right">
@@ -78,12 +75,12 @@
         <div class="row">
           <div class="left">
             <div class="title">Nickname</div>
-            <div class="description">Es el nombre con el que el resto de usuarios verán tus mensajes <b style="color: #e74c3c;">(Aún no disponible)</b></div>
+            <div class="description">Es el nombre con el que el resto de usuarios verán tus mensajes</div>
           </div>
           <div class="right" style="white-space: nowrap; overflow-x: hidden;">
             <div class="form-inline">
               <input class="configInput" placeholder="Inserta tu nuevo nickname" id="nicknameConfigInput"/>
-              <button type="button" class="configButton-blue">&#10004;</button>
+              <button type="button" class="configButton-blue" id="nicknameConfigButton">&#10004;</button>
             </div>
           </div>
         </div>
@@ -115,25 +112,19 @@
           </div>
         </div>
         <div class="separator"></div>
+      </div>
+      <div id="adminConfigPanel" style="display: none;">
         <div class="row">
-          <div class="left">
-            <div class="title">OwO</div>
-            <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
+          <div class="left" style="vertical-align: top;">
+            <div class="title">Lista de Roles</div>
+            <div class="description">Lista de los roles disponibles y su jerarquía</div>
           </div>
-          <div class="right">
-            <input type="checkbox" id="switch-1" /><label for="switch-1"></label>
+          <div class="right" style="text-align: center;">
+            <ul class="role-list" id="role-list"></ul>
+            <button type="button" class="green-button" id="saveButtonRoleList">Guardar</button>
           </div>
         </div>
         <div class="separator"></div>
-        <div class="row">
-          <div class="left">
-            <div class="title">EwE</div>
-            <div class="description">Esta es la descripcion personalizada para la opción de configuración mostrada a la derecha</div>
-          </div>
-          <div class="right">
-            <button type="button">Hola que tal</button>
-          </div>
-        </div>
       </div>
     </div>
   </div>

@@ -6,6 +6,7 @@ module.exports = class User{
   constructor(username){
     this.user_id = null
     this.username = username
+    this.nickname = ''
     this.color = '#dce0eb'
     this.password = null
     this.status = 'offline'
@@ -44,5 +45,11 @@ module.exports = class User{
 
   updateColor(newColor){
     vars.socket.emit('updateUsernameColor', {'newColor': newColor, 'user': new User(this.username)})
+  }
+
+  updateNickname(nickname){
+    var user = new User(this.username)
+    user.nickname = this.nickname
+    vars.socket.emit('updateUsernameNickname', {'newNickname': nickname, 'user': user})
   }
 }

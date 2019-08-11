@@ -7,6 +7,7 @@ module.exports = class Message{
     this._id = null
     var userObj = new User(user.username)
     userObj.user_id = user.user_id
+    userObj.nickname = user.nickname
     userObj.color = user.color
     userObj.roles = user.roles
     this.user = userObj
@@ -42,7 +43,7 @@ module.exports = class Message{
     var header = $('<div>').addClass('message-header')
     var message = $('<div>').addClass('message')
     var line = $('<span>').addClass('message-line').html(this.content).attr({user_id: this.user.user_id, id: this._id, datetime: this.time})
-    header.append($('<span>').addClass('message-username').text(this.user.username).css('color', this.user.color))
+    header.append($('<span>').addClass('message-username').attr({username: this.user.username}).text(this.user.nickname).css('color', this.user.color))
     header.append($('<span>').addClass('message-time').text(time))
     if(this.image != null){
       var image = $('<img>').attr({id: this._id, src: this.image}).addClass('imageMsg')

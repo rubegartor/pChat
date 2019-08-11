@@ -1,13 +1,32 @@
-const crypto = require('crypto')
 const contextFuncs = require('./contextFuncs')
 const remote = require('electron').remote
+const User = require('../inc/user')
 
 let display = remote.screen.getPrimaryDisplay()
 
 module.exports = {
-  sha1: (string) => {
-    return crypto.createHash('sha1').update(string, 'binary').digest('hex')
+  loadImages: () => {
+    $('#createChannelBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/plus_20.png')
+    $('#toggleUsersViewBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/chevron_up_20.png')
+    $('#searchBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/search_20.png')
+    $('#pushPinBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/pushpin_20.png')
+    $('#notifBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/notif1_20.png')
+    $('#cogBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/cog_20.png')
   },
+
+  login: () => {
+    funcs.addAlert('Conectando con el servidor...', 'alert-purple')
+    var options = {}
+    var username = $('#loginUsernameInput').val().trim()
+    var pwd = $('#loginPasswordInput').val().trim()
+    var user = new User(username)
+    user.user_id = null
+    user.password = pwd
+    if($('#hostLoginInput').val().trim() != '' || $('#portLoginInput').val().trim() != ''){
+      options = {host: $('#hostLoginInput').val().trim(), port: $('#portLoginInput').val().trim()}
+    }
+    user.login(options)
+  },  
 
   addContextMenu: function(element, subElement, options, funcs) {
     element.on('contextmenu', subElement, (e) => {
@@ -175,9 +194,9 @@ module.exports = {
 
   loadUserConfig: () => {
     if(vars.me.status.notif == true){
-      $('#notifBtn').attr('src', 'file:///images/notif2_20.png')
+      $('#notifBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/notif2_20.png')
     }else{
-      $('#notifBtn').attr('src', 'file:///images/notif1_20.png')
+      $('#notifBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/notif1_20.png')
     }
   },
 
@@ -248,10 +267,7 @@ module.exports = {
   },
 
   loadConfig: function(){
-    var colorElement = $('.color[data-color="' + vars.me.color + '"]')
-    colorElement.css('box-shadow', this.hexToRgb(colorElement.attr('data-color'), 0.3) + ' 0px 0px 0px 4px')
-
-    $('#nicknameConfigInput').val(vars.me.username)
+    vars.socket.emit('loadConfig')
   }
 }
 

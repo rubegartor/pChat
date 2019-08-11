@@ -1201,3 +1201,42 @@ label:active:after {
 .form-inline {
   display: inline-block;
 }
+
+.role-list{
+  list-style: none;
+  margin-bottom: 15px;
+}
+
+.role-list li{
+  background-color: var(--message-bg);
+  width: 200px;
+  margin: 6px 0px;
+  padding: 4px 0px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.role-list li:hover{
+  opacity: 0.8;
+}
+
+.green-button{
+  background-color: var(--green);
+  width: 200px;
+  padding: 10px 15px;
+  border: 0px;
+  border-radius: 5px;
+  color: var(--text-color);
+  outline: 0;
+  font-size: 1em;
+  float: left;
+  cursor: pointer;
+}
+
+.green-button:hover{
+  background-color: var(--green-hover);
+}
+
+.green-button:active{
+  opacity: .8;
+}

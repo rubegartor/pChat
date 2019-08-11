@@ -1,4 +1,5 @@
 const Role = require('./role.js')
+const User = require('../inc/user')
 require('jquery.scrollto/jquery.scrollTo')
 
 module.exports = () => {
@@ -26,6 +27,7 @@ module.exports = () => {
   vars.socket.on('loginRequestResponse', (response) => {
     if(response.status == 'ok'){
       var user = new User(response.username)
+      user.nickname = response.nickname
       user.user_id = vars.socket.id
       user.password = null
       user.status = response.user_status
@@ -33,6 +35,8 @@ module.exports = () => {
       response.roles.forEach((role) => {
         var roleObj = new Role(role.name)
         roleObj._id = role._id
+        roleObj.position = role.position
+        roleObj.topRole = role.topRole
         if(role.permissions === undefined){
           roleObj.perm = []
         }else{
@@ -100,22 +104,28 @@ module.exports = () => {
       if(channelLength == 0){
         funcs.selectFirstChannel()
       }
+    }else if(resp.status == 'alert'){
+      funcs.addAlert(resp.message, 'alert-yellow')
     }else{
-      funcs.addAlert('El canal ya existe', 'alert-yellow')
+      funcs.addAlert(resp.message, 'alert-red')
     }
   })
 
-  vars.socket.on('removeChannelResponse', (channel) => {
-    $('#chnl-panel > li').each(function() {
-      if($(this).text() === channel.name){
-        $(this).remove()
-        return false
+  vars.socket.on('removeChannelResponse', (resp) => {
+    if(resp.status == 'ok'){
+      $('#chnl-panel > li').each(function() {
+        if($(this).text() === resp.channel.name){
+          $(this).remove()
+          return false
+        }
+      })
+  
+      if(funcs.getActiveChannel().length == 0){
+        $('#chat-messages').html('')
+        funcs.selectFirstChannel()
       }
-    })
-
-    if(funcs.getActiveChannel().length == 0){
-      $('#chat-messages').html('')
-      funcs.selectFirstChannel()
+    }else{
+      funcs.addAlert(resp.message, 'alert-red')
     }
   })
 
@@ -132,7 +142,7 @@ module.exports = () => {
     if(mentions != null){
       if(mentions.includes('@' + vars.me.username)){
         if(vars.me.status.notif){
-          funcs.createNotification('@' + msg.username + ' te ha mencionado', msg.content, 'green', 'file:///images/checkmark_24.png')
+          funcs.createNotification('@' + msg.user.username + ' te ha mencionado', msg.content, 'green', 'file:///' + remote.app.getAppPath() + '/images/checkmark_24.png')
         }
       }
     }
@@ -140,7 +150,7 @@ module.exports = () => {
     if($('#chat-messages > div').length == 0){
       $('#chat-messages').append(message.toHTML())
     }else{
-      if($('#chat-messages > div:last > div:last > span').attr('user_id') == message.user_id){
+      if($('#chat-messages > div:last > div:last > span').attr('user_id') == message.user.user_id){
         var datetimePrev = new Date($('#chat-messages > div:last > div:last > span').attr('datetime'))
         datetimePrev = new Date(datetimePrev.setMinutes(datetimePrev.getMinutes() + 15)) //15 min
 
@@ -170,7 +180,7 @@ module.exports = () => {
       if($('#chat-messages > div').length == 0){
         $('#chat-messages').append(message.toHTML())
       }else{
-        if($('#chat-messages > div:last > div:last > span').attr('user_id') == message.user_id){
+        if($('#chat-messages > div:last > div:last > span').attr('user_id') == message.user.user_id){
           $('#chat-messages > div:last > div:last').append(message.toAppend())
         }else{
           $('#chat-messages').append(message.toHTML())
@@ -187,7 +197,7 @@ module.exports = () => {
       var elementParent = element.parent('div')
       var elementContainer = elementParent.parent()
       var elementTime = elementParent.prev()
-      var elementUser = elementTime.prev()
+      var elementNickname = elementTime.prev()
       var countChildren = elementParent.children().length - 1
       element.remove()
     
@@ -195,7 +205,7 @@ module.exports = () => {
         elementContainer.remove()
         elementParent.remove()
         elementTime.remove()
-        elementUser.remove()
+        elementNickname.remove()
       }
     }else{
       funcs.addAlert(messageData.message, 'alert-red')
@@ -300,10 +310,53 @@ module.exports = () => {
     if(vars.me.username === data.user.username){
       vars.me.color = data.newColor
     }
-    $('.message-header').each(function(index){
-      if($(this).children('span:first').text() === vars.me.username){
+    $('.message-header').each(function(i){
+      if($(this).children('span:first').text() === vars.me.nickname){
         $(this).children('span:first').css('color', data.newColor)
       }
     })
+  })
+
+  vars.socket.on('getRolesResponse', (roles) => {
+    $('#role-list').html('')
+    roles = roles.sort((a,b) => (a.position > b.position) ? 1 : ((b.position > a.position) ? -1 : 0)) //Se ordenan los objetos segun su posicion
+    roles.forEach((role) => {
+      $('#role-list').append($('<li>').text(role.name))
+    })
+  })
+
+  vars.socket.on('updateRolesPositionResponse', (resp) => {
+    if(resp.status == 'ok'){
+      funcs.addAlert('Se han actualizado los roles', 'alert-green')
+    }else{
+      funcs.addAlert('No se han podido actualizar los roles', 'alert-red')
+    }
+  })
+
+  vars.socket.on('updateUsernameNicknameResponse', (resp) => {
+    if(resp.status == 'ok'){
+      var oldNickname = resp.data.user.nickname
+      if(vars.me.username === resp.data.user.username){
+        vars.me.nickname = resp.data.newNickname
+        $('#nicknameConfigInput').val(resp.data.newNickname)
+        funcs.addAlert('Tu nickname se ha actualizado correctamente', 'alert-green')
+      }
+
+      $('.message-header').each(function(i){
+        if($(this).children('span:first').text() === oldNickname){
+          $(this).children('span:first').text(resp.data.newNickname)
+        }
+      })
+    }
+  })
+
+  vars.socket.on('loadConfigResponse', (resp) => {
+    if(resp.topRole){
+      $('#adminConfigPanel-option').css('display', 'block')
+    }
+    var colorElement = $('.color[data-color="' + vars.me.color + '"]')
+    colorElement.css('box-shadow', funcs.hexToRgb(colorElement.attr('data-color'), 0.3) + ' 0px 0px 0px 4px')
+
+    $('#nicknameConfigInput').val(vars.me.nickname)
   })
 }

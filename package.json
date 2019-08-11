@@ -14,7 +14,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "electron": "^5.0.1",
+    "electron": "^6.0.0",
     "electron-builder": "^20.40.2"
   },
   "dependencies": {
@@ -28,9 +28,13 @@
   },
   "build": {
     "appId": "72a5b2626b757f4bba1774ef46db94991ab0f183",
-    "icon": "./images/icns/icon.ico",
-    "extraFiles": [
-      "images"
+    "asar": false,
+    "icon": "./images/icns/icon.png",
+    "extraResources": [
+      {
+        "from": "images",
+        "to": "app/images"
+      }
     ]
   }
 }

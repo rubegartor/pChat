@@ -7,13 +7,17 @@ const vars = require('../inc/vars')
 const funcs = require('../inc/general')
 const Message = require('../inc/message')
 const Channel = require('../inc/channel')
-const User = require('../inc/user')
+const Role = require('../inc/role')
 
 let contextMenuVisible = false
 let absentTimeout = null
 
 $(document).ready(function(){
+  funcs.loadImages()
   funcs.createContextMenus()
+
+  $('#role-list').sortable();
+  $('#role-list').disableSelection();
 
   $('#close-btn').on('click', () => {
     if(vars.activeNotification != null){
@@ -54,11 +58,11 @@ $(document).ready(function(){
   $('#toggleUsersViewBtn').on('click', () => {
     if($('#usrs-panel').css('display') == 'none'){
       $('#usrs-panel').slideDown(250, () => {
-        $('#toggleUsersViewBtn').attr('src', 'file:///images/chevron_up_20.png')
+        $('#toggleUsersViewBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/chevron_up_20.png')
       })
     }else{
       $('#usrs-panel').slideUp(250, () => {
-        $('#toggleUsersViewBtn').attr('src', 'file:///images/chevron_down_20.png')
+        $('#toggleUsersViewBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/chevron_down_20.png')
       })
     }
   })
@@ -111,17 +115,14 @@ $(document).ready(function(){
 
   $('#submitLogin').on('click', () => {
     $('#submitLogin').prop('disabled', true)
-    funcs.addAlert('Conectando con el servidor...', 'alert-purple')
-    var options = {}
-    var username = $('#loginUsernameInput').val().trim()
-    var pwd = $('#loginPasswordInput').val().trim()
-    var user = new User(username)
-    user.user_id = null
-    user.password = pwd
-    if($('#hostLoginInput').val().trim() != '' || $('#portLoginInput').val().trim() != ''){
-      options = {host: $('#hostLoginInput').val().trim(), port: $('#portLoginInput').val().trim()}
+    funcs.login()
+  })
+
+  $('#loginPasswordInput, #portLoginInput').on('keypress', function(e){
+    if(e.which == 13){
+      $('#submitLogin').prop('disabled', true)
+      funcs.login()
     }
-    user.login(options)
   })
 
   $('#loginMoreOptions').on('click', () => {
@@ -147,11 +148,11 @@ $(document).ready(function(){
       case 'notifBtn':
         vars.me.status.main = 'online'
 
-        if($('#notifBtn').attr('src') == 'file:///images/notif1_20.png'){
-          $('#notifBtn').attr('src', 'file:///images/notif2_20.png')  
+        if($('#notifBtn').attr('src') == 'file:///' + remote.app.getAppPath() + '/images/notif1_20.png'){
+          $('#notifBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/notif2_20.png')  
           vars.me.status.notif = true
         }else{
-          $('#notifBtn').attr('src', 'file:///images/notif1_20.png')
+          $('#notifBtn').attr('src', 'file:///' + remote.app.getAppPath() + '/images/notif1_20.png')
           vars.me.status.notif = false
         }
     
@@ -186,7 +187,12 @@ $(document).ready(function(){
   })
 
   $('#configOptionsList > li').on('click', function(){
+    var previousPanel = $('#configOptionsList > li.configOptionsListItemActive').attr('id').split('-')[0]
+    $('#' + previousPanel).hide()
     $('#configOptionsList > li').removeClass('configOptionsListItemActive')
+    vars.socket.emit('getRoles')
+    var panelID = $(this).attr('id').split('-')[0]
+    $('#' + panelID).show()
     $(this).addClass('configOptionsListItemActive')
   })
 
@@ -194,6 +200,26 @@ $(document).ready(function(){
     $('.color').css('box-shadow', 'none');
     $(this).css({'background': 'white !important', 'box-shadow': funcs.hexToRgb($(this).attr('data-color'), 0.3) + ' 0px 0px 0px 4px'});
     vars.me.updateColor($(this).attr('data-color'))
+  })
+
+  $('#saveButtonRoleList').on('click', () => {
+    var roles = []
+    $('#role-list > li').each(function (index){
+      var role = new Role($(this).text())
+      role.position = index
+      roles.push(role)
+    })
+
+    if(roles.length > 0){
+      vars.socket.emit('updateRolesPosition', roles)
+    }
+  })
+
+  $('#nicknameConfigButton').on('click', () => {
+    var inputVal = $('#nicknameConfigInput').val()
+    if(inputVal != vars.me.nickname){
+      vars.me.updateNickname(inputVal)
+    }
   })
 
   $('#mainInput').on('keydown', (event) => {

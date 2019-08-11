@@ -15,7 +15,7 @@ function createWindow () {
     resizable: true,
     backgroundColor: '#343A40',
     titleBarStyle: 'hidden',
-    icon: path.join(__dirname, 'images/icns/icon.ico'),
+    icon: path.join(__dirname, 'images/icns/icon.png'),
     webPreferences: {
       nodeIntegration: true
     }
@@ -23,9 +23,8 @@ function createWindow () {
 
   win.setMenu(null)
   win.loadFile(path.join(__dirname, 'src/template/index.html'))
-  win.webContents.openDevTools()
-  tray = new Tray('images/icns/icon.png')
-  tray.setToolTip('pChat');
+  tray = new Tray(app.getAppPath() + '/images/icns/icon.png')
+  tray.setToolTip('pChat')
 
   var contextMenu = Menu.buildFromTemplate([
     {
